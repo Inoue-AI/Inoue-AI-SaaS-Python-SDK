@@ -218,7 +218,9 @@ from .enums import (
     PostStatus,
     PostTargetStatus,
     PromptRunStatus,
+    RecurrenceFrequency,
     ResourceType,
+    ScheduleEventType,
     ScheduleStatus,
     WorkflowRunStatus,
     WorkflowStatus,
@@ -262,12 +264,19 @@ from .pagination import (
     PostListQuery,
     PromptRunListQuery,
     PromptTemplateListQuery,
+    RecurringRuleListQuery,
     RevenueEventListQuery,
     ScheduleListQuery,
     UsageListQuery,
     WebhookEventListQuery,
 )
 from .pooling import ModelPool, ModelPoolMember, PoolingInvite, PoolView
+from .push_subscriptions import (
+    PushSubscriptionCreateRequest,
+    PushSubscriptionKeys,
+    PushSubscriptionResponse,
+    VapidPublicKeyResponse,
+)
 from .posts import PostMedia, PostTargetRecord
 from .responses import ErrorBody, ErrorResponse, ResponseMeta, SuccessResponse
 from .results import (
@@ -293,6 +302,10 @@ from .rpc import (
     UpsertPlatformTokensRequest,
 )
 from .schedule import (
+    RecurrenceSchema,
+    RecurringRuleCreateRequest,
+    RecurringRuleResponse,
+    RecurringRuleUpdateRequest,
     ScheduleCatalogPlatform,
     ScheduleCatalogResponse,
     ScheduleCompleteRequest,
@@ -337,6 +350,9 @@ from .workers import (
     WorkerTokenClaims,
 )
 from .workflows import (
+    ApprovalGateApproveRequest,
+    ApprovalGateRejectRequest,
+    StepInputsUpdateRequest,
     WorkflowBatchRunRequest,
     WorkflowBatchRunResponse,
     WorkflowCreateRequest,
@@ -346,6 +362,7 @@ from .workflows import (
     WorkflowRunRequest,
     WorkflowRunResponse,
     WorkflowRunStepResponse,
+    WorkflowStepResolveRequest,
     WorkflowUpdateRequest,
 )
 
@@ -359,8 +376,8 @@ __all__ = [
     "PromptRunStatus",
     "JobType",
     "ModelCreationMode",
-    "ModelWorkflowStatus",
     "ModelJobType",
+    "ModelWorkflowStatus",
     "OrgRole",
     "PostStatus",
     "PostTargetStatus",
@@ -378,14 +395,11 @@ __all__ = [
     "GenericJobPayload",
     "JobCompletionResult",
     "WorkerTokenClaims",
-    "WorkerStatusRequest",
     "JobClaimRequest",
     "JobClaimResponse",
     "JobProgressRequest",
     "JobCompleteRequest",
     "JobFailRequest",
-    "ReleaseDeadClaimsRequest",
-    "ReleaseDeadClaimsResponse",
     "AssetUploadMessage",
     "RegisterRequest",
     "LoginRequest",
@@ -603,11 +617,8 @@ __all__ = [
     "SystemEnumsResponse",
     "FluxOptions",
     "NanoBananaOptions",
-    "QwenOptions",
     "SeedreamOptions",
     "TopazOptions",
-    "WanOptions",
-    "ZImageOptions",
     "Page",
     "PaginationQuery",
     "DateRangeQuery",
@@ -641,4 +652,12 @@ __all__ = [
     "WorkflowRunStepResponse",
     "WorkflowRunResponse",
     "WorkflowBatchRunResponse",
+    "WorkflowStepResolveRequest",
+    "ScheduleEventType",
+    "RecurrenceFrequency",
+    "RecurrenceSchema",
+    "RecurringRuleCreateRequest",
+    "RecurringRuleUpdateRequest",
+    "RecurringRuleResponse",
+    "RecurringRuleListQuery",
 ]

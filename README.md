@@ -1,6 +1,8 @@
 # Inoue AI SaaS Python SDK
 
-Async Python SDK and shared contracts for the Inoue AI SaaS API.
+**Canonical Python SDK** for the Inoue AI SaaS API. This is the single source of truth for the SDK client and shared contracts used across the Inoue AI ecosystem.
+
+Contracts originate in the backend repo (`Inoue-AI-SaaS-Backend/packages/contracts/`) and are synced here automatically via CI.
 
 ## Installation
 

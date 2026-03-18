@@ -47,8 +47,6 @@ class JobType(str, Enum):
     LORA_QWEN_IMAGE_TRAIN = "lora_qwen_image_train"
     FACE_SWAP = "face_swap"
     IMAGE_CROP = "image_crop"
-    # GENERATE_CANDIDATES = "generate_candidates"
-    # GENERATE_AVATAR = "generate_avatar"
     FANVUE_UPLOAD = "fanvue_upload"
     FANVUE_SEND_MESSAGE = "fanvue_send_message"
     FANVUE_POST = "fanvue_post"
@@ -182,6 +180,17 @@ class ScheduleStatus(str, Enum):
     CANCELED = "canceled"
 
 
+class ScheduleEventType(str, Enum):
+    SCHEDULE_POST = "schedule_post"
+    REMINDER = "reminder"
+
+
+class RecurrenceFrequency(str, Enum):
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    MONTHLY = "monthly"
+
+
 class AssetType(str, Enum):
     IMAGE = "image"
     VIDEO = "video"
@@ -200,10 +209,10 @@ class EngineType(str, Enum):
     SEEDREAM = "seedream"
     GROK = "grok"
     TOPAZ = "topaz"
+    FLUX = "flux"
     QWEN = "qwen"
     WAN = "wan"
     ZIMAGE = "zimage"
-    FLUX = "flux"
 
 
 class EngineCategory(str, Enum):
@@ -229,6 +238,8 @@ class WorkflowRunStatus(str, Enum):
 class WorkflowStepStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
+    AWAITING_CLIENT = "awaiting_client"
+    AWAITING_INPUT = "awaiting_input"
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"

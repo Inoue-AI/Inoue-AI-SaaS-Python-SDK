@@ -69,6 +69,13 @@ class WorkflowBatchRunRequest(BaseModel):
     owner_org_id: str | None = None
 
 
+class WorkflowStepResolveRequest(BaseModel):
+    """Body for POST /v1/workflows/run-steps/:id/resolve."""
+
+    outputs: dict = Field(default_factory=dict)
+    output_asset_ids: list[str] = Field(default_factory=list)
+
+
 class WorkflowRunStepResponse(BaseModel):
     id: str
     node_id: str
@@ -109,3 +116,23 @@ class WorkflowBatchRunResponse(BaseModel):
     runs: list[WorkflowRunResponse] = Field(default_factory=list)
     created_at: str
     updated_at: str
+
+
+# ── Approval Gate ──
+
+
+class ApprovalGateApproveRequest(BaseModel):
+    """Body for POST /v1/workflow-runs/run-steps/:id/approve."""
+    pass
+
+
+class ApprovalGateRejectRequest(BaseModel):
+    """Body for POST /v1/workflow-runs/run-steps/:id/reject."""
+
+    reason: str | None = None
+
+
+class StepInputsUpdateRequest(BaseModel):
+    """Body for PATCH /v1/workflow-runs/run-steps/:id/inputs."""
+
+    inputs: dict = Field(default_factory=dict)

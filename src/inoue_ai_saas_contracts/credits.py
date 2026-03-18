@@ -32,6 +32,8 @@ class RateCardEntry(BaseModel):
     job_type: JobType | str
     job_title: str | None = None
     engine_type: str | None = None
+    category: str | None = None
     cost_credits: Decimal
     rate_unit: str = "credits"
     params: dict[str, Any] | None = None
+    description: str | None = None

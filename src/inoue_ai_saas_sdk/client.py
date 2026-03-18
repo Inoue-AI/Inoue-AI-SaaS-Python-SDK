@@ -136,6 +136,7 @@ class InoueAiSaasClient:
         self.audit = AuditApi(self)
         self.system = SystemApi(self)
         self.workflows = WorkflowsApi(self)
+        self.push_subscriptions = PushSubscriptionsApi(self)
 
     @property
     def access_token(self) -> str | None:
@@ -2228,6 +2229,65 @@ class WorkflowsApi(_ServiceBase):
             "GET",
             f"{API_PREFIX}/workflow-batch-runs/{batch_run_id}",
             response_model=contracts.WorkflowBatchRunResponse,
+        )
+
+    async def approve_step(self, *, step_id: str) -> ApiResult[contracts.WorkflowRunResponse]:
+        return await self._client._request(
+            "POST",
+            f"{API_PREFIX}/workflow-runs/run-steps/{step_id}/approve",
+            json={},
+            response_model=contracts.WorkflowRunResponse,
+        )
+
+    async def reject_step(
+        self, *, step_id: str, reason: str | None = None
+    ) -> ApiResult[contracts.WorkflowRunResponse]:
+        return await self._client._request(
+            "POST",
+            f"{API_PREFIX}/workflow-runs/run-steps/{step_id}/reject",
+            json={"reason": reason} if reason else {},
+            response_model=contracts.WorkflowRunResponse,
+        )
+
+    async def update_step_inputs(
+        self, *, step_id: str, inputs: dict
+    ) -> ApiResult[contracts.WorkflowRunStepResponse]:
+        return await self._client._request(
+            "PATCH",
+            f"{API_PREFIX}/workflow-runs/run-steps/{step_id}/inputs",
+            json={"inputs": inputs},
+            response_model=contracts.WorkflowRunStepResponse,
+        )
+
+
+class PushSubscriptionsApi(_ServiceBase):
+
+    async def vapid_public_key(self) -> ApiResult[contracts.VapidPublicKeyResponse]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/push-subscriptions/vapid-public-key",
+            response_model=contracts.VapidPublicKeyResponse,
+        )
+
+    async def create(
+        self, *, request: contracts.PushSubscriptionCreateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.PushSubscriptionResponse]:
+        payload = self._payload(contracts.PushSubscriptionCreateRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/push-subscriptions/",
+            json=payload,
+            response_model=contracts.PushSubscriptionResponse,
+        )
+
+    async def list(self) -> ApiResult[list[contracts.PushSubscriptionResponse]]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/push-subscriptions/",
+            response_model=list[contracts.PushSubscriptionResponse],
+        )
+
+    async def delete(self, *, subscription_id: str) -> ApiResult[dict]:
+        return await self._client._request(
+            "DELETE", f"{API_PREFIX}/push-subscriptions/{subscription_id}",
+            response_model=dict,
         )
 
 

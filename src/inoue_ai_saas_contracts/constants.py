@@ -14,6 +14,7 @@ HEADER_WORKER_BOOTSTRAP = "X-Worker-Bootstrap"
 from inoue_ai_saas_contracts.enums import EngineType, JobType  # noqa: E402
 
 ALLOWED_PROMPT_RUN_JOB_TYPES = [
+    # Legacy / RunPod serverless
     JobType.SDXL_IMAGE.value,
     JobType.UPSCALE.value,
     # Nano Banana
@@ -28,6 +29,8 @@ ALLOWED_PROMPT_RUN_JOB_TYPES = [
     JobType.SEEDREAM_V4_EDIT.value,
     JobType.SEEDREAM_V4_5_T2I.value,
     JobType.SEEDREAM_V4_5_EDIT.value,
+    JobType.SEEDREAM_5_LITE_T2I.value,
+    JobType.SEEDREAM_5_LITE_I2I.value,
     # Sora
     JobType.SORA2_T2V.value,
     JobType.SORA2_I2V.value,
@@ -56,7 +59,12 @@ ALLOWED_PROMPT_RUN_JOB_TYPES = [
     # Topaz
     JobType.TOPAZ_IMAGE_UPSCALE.value,
     JobType.TOPAZ_VIDEO_UPSCALE.value,
-    # Qwen / Wan / Z-Image (Runpod serverless)
+    # Flux
+    JobType.FLUX2_PRO_T2I.value,
+    JobType.FLUX2_PRO_I2I.value,
+    JobType.FLUX2_FLEX_T2I.value,
+    JobType.FLUX2_FLEX_I2I.value,
+    # Qwen / Wan / Z-Image (RunPod serverless)
     JobType.QWEN_TXT2IMG.value,
     JobType.QWEN_EDIT.value,
     JobType.IDENTITY_SWAP.value,
@@ -77,6 +85,7 @@ ALLOWED_PROMPT_RUN_ENGINE_TYPES = [
     EngineType.SEEDREAM.value,
     EngineType.GROK.value,
     EngineType.TOPAZ.value,
+    EngineType.FLUX.value,
     EngineType.QWEN.value,
     EngineType.WAN.value,
     EngineType.ZIMAGE.value,
@@ -210,6 +219,8 @@ TABLE_WORKFLOWS = "workflows"
 TABLE_WORKFLOW_RUNS = "workflow_runs"
 TABLE_WORKFLOW_RUN_STEPS = "workflow_run_steps"
 TABLE_WORKFLOW_BATCH_RUNS = "workflow_batch_runs"
+TABLE_SCHEDULE_RECURRING_RULES = "schedule_recurring_rules"
+TABLE_PUSH_NOTIFICATION_SUBSCRIPTIONS = "push_notification_subscriptions"
 
 # Platform names
 PLATFORM_FANVUE = "fanvue"
@@ -222,3 +233,4 @@ QUEUE_ASSET_UPLOADS = "asset_uploads"
 QUEUE_ASSET_DELETIONS = "asset_deletions"
 QUEUE_CONTENT_DOWNLOAD_REQUESTS = "content_download_requests"
 QUEUE_JOB_STATUS_SYNC = "job_status_sync"
+QUEUE_SCHEDULE_EVENTS = "schedule_events"

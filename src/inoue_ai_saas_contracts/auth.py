@@ -520,10 +520,10 @@ class PromptRunCreateRequest(BaseModel):
     avatar_profile_id: str | None = None
     run_input_json: dict = Field(default_factory=dict)
     resolved_prompt_text: str
-    engine_type: str = "sdxl"
+    engine_type: str = "seedream"
     engine_params_json: dict = Field(default_factory=dict)
     job_input: dict = Field(default_factory=dict)
-    job_type: str = "sdxl_image"
+    job_type: str = "seedream_v4_t2i"
     idempotency_key: str | None = None
 
 
@@ -587,6 +587,7 @@ class JobResponse(BaseModel):
     compute_seconds: int | None = None
     bill_failed_by_compute_seconds: bool | None = None
     progress_json: dict | None = None
+    error_json: dict | None = None
     template_id: str | None = None
     template_title: str | None = None
     workflow_run_step_id: str | None = None
