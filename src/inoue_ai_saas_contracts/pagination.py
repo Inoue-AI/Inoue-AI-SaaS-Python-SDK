@@ -141,6 +141,12 @@ class UsageListQuery(PaginationQuery, DateRangeQuery):
     q: str | None = None
 
 
+class RecurringRuleListQuery(PaginationQuery):
+    calendar: str | None = None
+    event_type: str | None = None
+    is_active: bool | None = None
+
+
 class PoolingInviteListQuery(PaginationQuery):
     status: str | None = None
 

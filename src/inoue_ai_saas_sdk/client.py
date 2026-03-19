@@ -136,6 +136,18 @@ class InoueAiSaasClient:
         self.audit = AuditApi(self)
         self.system = SystemApi(self)
         self.workflows = WorkflowsApi(self)
+        self.push_subscriptions = PushSubscriptionsApi(self)
+        self.albums = AlbumsApi(self)
+        self.vision = VisionApi(self)
+        self.tiktok = TikTokApi(self)
+        self.referrals = ReferralsApi(self)
+        self.huggingface = HuggingFaceApi(self)
+        self.civitai = CivitaiApi(self)
+        self.elevenlabs = ElevenLabsApi(self)
+        self.loras = LorasApi(self)
+        self.legal = LegalApi(self)
+        self.apps = AppsApi(self)
+        self.discord_webhooks = DiscordWebhooksApi(self)
 
     @property
     def access_token(self) -> str | None:
@@ -379,6 +391,30 @@ class AuthApi(_ServiceBase):
             response_model=contracts.UserSessionRevokeResponse,
         )
 
+    async def register_settings(self) -> ApiResult[dict]:
+        return await self._client._request("GET", f"{API_PREFIX}/auth/register/settings", response_model=dict)
+
+    async def logout(self) -> ApiResult[dict]:
+        result = await self._client._request("POST", f"{API_PREFIX}/auth/logout", json={}, response_model=dict)
+        self._client.set_access_token(None)
+        self._client.set_refresh_token(None)
+        return result
+
+    async def update_me(self, *, display_name: str | None = None, **kwargs: Any) -> ApiResult[AuthMeResult]:
+        payload: dict[str, Any] = {}
+        if display_name is not None:
+            payload["display_name"] = display_name
+        payload.update({k: v for k, v in kwargs.items() if v is not None})
+        return await self._client._request(
+            "PATCH", f"{API_PREFIX}/auth/me", json=payload, response_model=AuthMeResult
+        )
+
+    async def me_analytics(self) -> ApiResult[dict]:
+        return await self._client._request("GET", f"{API_PREFIX}/auth/me/analytics", response_model=dict)
+
+    async def me_storage(self) -> ApiResult[dict]:
+        return await self._client._request("GET", f"{API_PREFIX}/auth/me/storage", response_model=dict)
+
 
 class OrgsApi(_ServiceBase):
     async def list(
@@ -483,6 +519,25 @@ class OrgsApi(_ServiceBase):
         payload = self._payload(contracts.OrgDeleteRequest, request, **kwargs)
         return await self._client._request(
             "POST", f"{API_PREFIX}/orgs/delete", json=payload, response_model=DeletionResult
+        )
+
+    async def bulk_update(self, *, updates: list[dict[str, Any]]) -> ApiResult[list[contracts.OrgResponse]]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/orgs/update", json={"updates": updates}, response_model=list[contracts.OrgResponse]
+        )
+
+    async def list_org_notifications(
+        self, *, org_id: str, request: contracts.PaginationQuery | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.Page[contracts.NotificationItem]]:
+        params = self._payload(contracts.PaginationQuery, request, **kwargs)
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/orgs/{org_id}/notifications", params=params or None,
+            response_model=contracts.Page[contracts.NotificationItem],
+        )
+
+    async def org_storage(self, *, org_id: str) -> ApiResult[dict]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/orgs/{org_id}/storage", response_model=dict
         )
 
 
@@ -670,6 +725,60 @@ class ModelsApi(_ServiceBase):
             "POST", f"{API_PREFIX}/models/transfer", json=payload, response_model=contracts.ModelResponse
         )
 
+    async def character_schema(self) -> ApiResult[contracts.CharacterPromptSchemaResponse]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/models/character-designer/schema",
+            response_model=contracts.CharacterPromptSchemaResponse,
+        )
+
+    async def create_character_creation(
+        self, request: contracts.CharacterCreationRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.CharacterCreationEnqueueResponse]:
+        payload = self._payload(contracts.CharacterCreationRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/models/character-creations", json=payload,
+            response_model=contracts.CharacterCreationEnqueueResponse,
+        )
+
+    async def list_character_creations(
+        self, request: contracts.CharacterCreationListQuery | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.Page[contracts.CharacterCreationResponse]]:
+        params = self._payload(contracts.CharacterCreationListQuery, request, **kwargs)
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/models/character-creations", params=params or None,
+            response_model=contracts.Page[contracts.CharacterCreationResponse],
+        )
+
+    async def get_character_creation(self, *, creation_id: str) -> ApiResult[contracts.CharacterCreationResponse]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/models/character-creations/{creation_id}",
+            response_model=contracts.CharacterCreationResponse,
+        )
+
+    async def patch_character_creation(
+        self, *, creation_id: str, request: contracts.CharacterCreationUpdateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.CharacterCreationResponse]:
+        payload = self._payload(contracts.CharacterCreationUpdateRequest, request, **kwargs)
+        return await self._client._request(
+            "PATCH", f"{API_PREFIX}/models/character-creations/{creation_id}", json=payload,
+            response_model=contracts.CharacterCreationResponse,
+        )
+
+    async def revoke_share(self, *, grant_id: str) -> ApiResult[RevokedResult]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/models/revoke", json={"grant_id": grant_id},
+            response_model=RevokedResult,
+        )
+
+    async def model_replies(
+        self, *, model_id: str, request: contracts.PaginationQuery | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.Page[dict]]:
+        params = self._payload(contracts.PaginationQuery, request, **kwargs)
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/models/{model_id}/replies", params=params or None,
+            response_model=contracts.Page[dict],
+        )
+
 
 class PromptsApi(_ServiceBase):
     async def list_templates(
@@ -810,6 +919,28 @@ class PromptsApi(_ServiceBase):
             "POST", f"{API_PREFIX}/prompts/run", json=payload, response_model=contracts.PromptRunBundleResponse
         )
 
+    async def delete_template(self, *, template_id: str) -> ApiResult[DeletionResult]:
+        return await self._client._request(
+            "DELETE", f"{API_PREFIX}/prompts/template/{template_id}", response_model=DeletionResult
+        )
+
+    async def update_version_config(self, *, version_id: str, **kwargs: Any) -> ApiResult[contracts.PromptVersionResponse]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/prompts/version/update", json={"version_id": version_id, **kwargs},
+            response_model=contracts.PromptVersionResponse,
+        )
+
+    async def unlink_template(self, *, template_id: str, model_id: str) -> ApiResult[DeletionResult]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/prompts/unlink", json={"template_id": template_id, "model_id": model_id},
+            response_model=DeletionResult,
+        )
+
+    async def delete_run(self, *, run_id: str) -> ApiResult[DeletionResult]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/prompts/run/delete", json={"run_id": run_id}, response_model=DeletionResult
+        )
+
 
 class JobsApi(_ServiceBase):
     async def list(
@@ -855,6 +986,12 @@ class JobsApi(_ServiceBase):
     async def pipeline(self, *, pipeline_id: str) -> ApiResult[contracts.PipelineResponse]:
         return await self._client._request(
             "GET", f"{API_PREFIX}/jobs/pipelines/{pipeline_id}", response_model=contracts.PipelineResponse
+        )
+
+    async def save_output_asset(self, *, job_id: str, asset_id: str) -> ApiResult[AssetPublicResponse]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/jobs/{job_id}/outputs/{asset_id}/save", json={},
+            response_model=AssetPublicResponse,
         )
 
 
@@ -922,6 +1059,12 @@ class DownloadsApi(_ServiceBase):
             response_model=contracts.ContentDownloadResponse,
         )
 
+    async def delete(self, *, download_id: str) -> ApiResult[DeletionResult]:
+        payload = self._payload(contracts.ContentDownloadDeleteRequest, None, download_id=download_id)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/downloads/delete", json=payload, response_model=DeletionResult
+        )
+
 
 class CreditsApi(_ServiceBase):
     async def wallet(self) -> ApiResult[contracts.UserWallet]:
@@ -938,6 +1081,12 @@ class CreditsApi(_ServiceBase):
     async def rate_cards(self) -> ApiResult[list[contracts.RateCardEntry]]:
         return await self._client._request(
             "GET", f"{API_PREFIX}/rate-cards", response_model=list[contracts.RateCardEntry]
+        )
+
+    async def usage_series(self, request: contracts.UsageListQuery | None = None, **kwargs: Any) -> ApiResult[dict]:
+        params = self._payload(contracts.UsageListQuery, request, **kwargs)
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/credits/usage/series", params=params or None, response_model=dict
         )
 
 
@@ -1217,6 +1366,42 @@ class AssetsApi(_ServiceBase):
             response_model=contracts.Page[AssetPublicResponse],
         )
 
+    async def upload_url(self, **kwargs: Any) -> ApiResult[dict]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/assets/upload", json=kwargs, response_model=dict
+        )
+
+    async def retry_upload(self, *, asset_id: str) -> ApiResult[dict]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/assets/upload/retry", json={"asset_id": asset_id}, response_model=dict
+        )
+
+    async def get_url(self, *, asset_id: str) -> ApiResult[dict]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/assets/{asset_id}/url", response_model=dict
+        )
+
+    async def get_content(self, *, asset_id: str) -> ApiResult[dict]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/assets/{asset_id}/content", response_model=dict
+        )
+
+    async def download(self, *, asset_id: str) -> ApiResult[dict]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/assets/{asset_id}/download", response_model=dict
+        )
+
+    async def bulk_update(self, request: contracts.AssetBulkUpdateRequest | None = None, **kwargs: Any) -> ApiResult[dict]:
+        payload = self._payload(contracts.AssetBulkUpdateRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/assets/bulk-update", json=payload, response_model=dict
+        )
+
+    async def mark_delete(self, *, asset_id: str) -> ApiResult[DeletionResult]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/assets/delete", json={"asset_id": asset_id}, response_model=DeletionResult
+        )
+
 
 class CollectionsApi(_ServiceBase):
     async def create(
@@ -1433,6 +1618,44 @@ class ScheduleApi(_ServiceBase):
             "DELETE",
             f"{API_PREFIX}/schedule/{schedule_id}",
             response_model=contracts.DeletionResult,
+        )
+
+    async def list_recurring_rules(
+        self, request: contracts.RecurringRuleListQuery | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.Page[contracts.RecurringRuleResponse]]:
+        params = self._payload(contracts.RecurringRuleListQuery, request, **kwargs)
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/schedule/recurring-rules", params=params or None,
+            response_model=contracts.Page[contracts.RecurringRuleResponse],
+        )
+
+    async def create_recurring_rule(
+        self, request: contracts.RecurringRuleCreateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.RecurringRuleResponse]:
+        payload = self._payload(contracts.RecurringRuleCreateRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/schedule/recurring-rules", json=payload,
+            response_model=contracts.RecurringRuleResponse,
+        )
+
+    async def update_recurring_rule(
+        self, *, rule_id: str, request: contracts.RecurringRuleUpdateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.RecurringRuleResponse]:
+        payload = self._payload(contracts.RecurringRuleUpdateRequest, request, **kwargs)
+        return await self._client._request(
+            "PATCH", f"{API_PREFIX}/schedule/recurring-rules/{rule_id}", json=payload,
+            response_model=contracts.RecurringRuleResponse,
+        )
+
+    async def delete_recurring_rule(self, *, rule_id: str) -> ApiResult[DeletionResult]:
+        return await self._client._request(
+            "DELETE", f"{API_PREFIX}/schedule/recurring-rules/{rule_id}", response_model=DeletionResult
+        )
+
+    async def toggle_rule(self, *, rule_id: str) -> ApiResult[contracts.RecurringRuleResponse]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/schedule/recurring-rules/{rule_id}/toggle", json={},
+            response_model=contracts.RecurringRuleResponse,
         )
 
 
@@ -2011,6 +2234,57 @@ class FanvueApi(_ServiceBase):
             response_model=contracts.FanvueMessage,
         )
 
+    async def mass_send(
+        self, *, model_id: str, body_text: str, attachments: list[dict] | None = None, **kwargs: Any
+    ) -> ApiResult[dict]:
+        payload: dict[str, Any] = {"model_id": model_id, "body_text": body_text}
+        if attachments:
+            payload["attachments"] = attachments
+        payload.update({k: v for k, v in kwargs.items() if v is not None})
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/fanvue/messages/mass-send", json=payload, response_model=dict
+        )
+
+    async def delete_message(self, *, conversation_id: str, message_id: str) -> ApiResult[DeletionResult]:
+        return await self._client._request(
+            "DELETE", f"{API_PREFIX}/fanvue/conversations/{conversation_id}/messages/{message_id}",
+            response_model=DeletionResult,
+        )
+
+    async def heartbeat_conversation(self, *, conversation_id: str) -> ApiResult[dict]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/fanvue/conversations/{conversation_id}/heartbeat", json={},
+            response_model=dict,
+        )
+
+    async def list_media(self, *, conversation_id: str) -> ApiResult[list[dict]]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/fanvue/conversations/{conversation_id}/media",
+            response_model=list[dict],
+        )
+
+    async def fan_insights(self, *, conversation_id: str) -> ApiResult[dict]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/fanvue/conversations/{conversation_id}/fan-insights",
+            response_model=dict,
+        )
+
+    async def set_icon(self, *, account_id: str, icon_url: str | None = None) -> ApiResult[FanvueConnectedAccount]:
+        payload: dict[str, Any] = {"account_id": account_id}
+        if icon_url is not None:
+            payload["icon_url"] = icon_url
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/fanvue/accounts/icon", json=payload,
+            response_model=FanvueConnectedAccount,
+        )
+
+    async def unmap_model(self, *, account_id: str, model_id: str) -> ApiResult[FanvueConnectedAccount]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/fanvue/accounts/unmap-model",
+            json={"account_id": account_id, "model_id": model_id},
+            response_model=FanvueConnectedAccount,
+        )
+
 
 class ThreadsApi(_ServiceBase):
     async def connect_callback(self, *, code: str, state: str | None = None) -> ApiResult[contracts.ConnectedAccount]:
@@ -2092,6 +2366,15 @@ class ThreadsApi(_ServiceBase):
         payload = self._payload(ModelIdentityMapRequest, request, **kwargs)
         return await self._client._request(
             "POST", f"{API_PREFIX}/threads/accounts/map-model", json=payload, response_model=contracts.ConnectedAccount
+        )
+
+    async def set_icon(self, *, account_id: str, icon_url: str | None = None) -> ApiResult[contracts.ConnectedAccount]:
+        payload: dict[str, Any] = {"account_id": account_id}
+        if icon_url is not None:
+            payload["icon_url"] = icon_url
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/threads/accounts/icon", json=payload,
+            response_model=contracts.ConnectedAccount,
         )
 
 
@@ -2228,6 +2511,761 @@ class WorkflowsApi(_ServiceBase):
             "GET",
             f"{API_PREFIX}/workflow-batch-runs/{batch_run_id}",
             response_model=contracts.WorkflowBatchRunResponse,
+        )
+
+    async def approve_step(self, *, step_id: str) -> ApiResult[contracts.WorkflowRunResponse]:
+        return await self._client._request(
+            "POST",
+            f"{API_PREFIX}/workflow-runs/run-steps/{step_id}/approve",
+            json={},
+            response_model=contracts.WorkflowRunResponse,
+        )
+
+    async def reject_step(
+        self, *, step_id: str, reason: str | None = None
+    ) -> ApiResult[contracts.WorkflowRunResponse]:
+        return await self._client._request(
+            "POST",
+            f"{API_PREFIX}/workflow-runs/run-steps/{step_id}/reject",
+            json={"reason": reason} if reason else {},
+            response_model=contracts.WorkflowRunResponse,
+        )
+
+    async def update_step_inputs(
+        self, *, step_id: str, inputs: dict
+    ) -> ApiResult[contracts.WorkflowRunStepResponse]:
+        return await self._client._request(
+            "PATCH",
+            f"{API_PREFIX}/workflow-runs/run-steps/{step_id}/inputs",
+            json={"inputs": inputs},
+            response_model=contracts.WorkflowRunStepResponse,
+        )
+
+
+class PushSubscriptionsApi(_ServiceBase):
+
+    async def vapid_public_key(self) -> ApiResult[contracts.VapidPublicKeyResponse]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/push-subscriptions/vapid-public-key",
+            response_model=contracts.VapidPublicKeyResponse,
+        )
+
+    async def create(
+        self, *, request: contracts.PushSubscriptionCreateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.PushSubscriptionResponse]:
+        payload = self._payload(contracts.PushSubscriptionCreateRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/push-subscriptions/",
+            json=payload,
+            response_model=contracts.PushSubscriptionResponse,
+        )
+
+    async def list(self) -> ApiResult[list[contracts.PushSubscriptionResponse]]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/push-subscriptions/",
+            response_model=list[contracts.PushSubscriptionResponse],
+        )
+
+    async def delete(self, *, subscription_id: str) -> ApiResult[dict]:
+        return await self._client._request(
+            "DELETE", f"{API_PREFIX}/push-subscriptions/{subscription_id}",
+            response_model=dict,
+        )
+
+
+class AlbumsApi(_ServiceBase):
+    async def list(
+        self, request: contracts.AlbumListQuery | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.Page[contracts.AlbumResponse]]:
+        params = self._payload(contracts.AlbumListQuery, request, **kwargs)
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/albums", params=params or None,
+            response_model=contracts.Page[contracts.AlbumResponse],
+        )
+
+    async def create(
+        self, request: contracts.AlbumCreateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.AlbumResponse]:
+        payload = self._payload(contracts.AlbumCreateRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/albums", json=payload, response_model=contracts.AlbumResponse
+        )
+
+    async def get(
+        self, *, album_id: str, request: contracts.PaginationQuery | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.AlbumDetailResponse]:
+        params = self._payload(contracts.PaginationQuery, request, **kwargs)
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/albums/{album_id}", params=params or None,
+            response_model=contracts.AlbumDetailResponse,
+        )
+
+    async def update(
+        self, *, album_id: str, request: contracts.AlbumUpdateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.AlbumResponse]:
+        payload = self._payload(contracts.AlbumUpdateRequest, request, **kwargs)
+        return await self._client._request(
+            "PATCH", f"{API_PREFIX}/albums/{album_id}", json=payload, response_model=contracts.AlbumResponse
+        )
+
+    async def delete(self, *, album_id: str) -> ApiResult[DeletionResult]:
+        return await self._client._request(
+            "DELETE", f"{API_PREFIX}/albums/{album_id}", response_model=DeletionResult
+        )
+
+    async def list_items(
+        self, *, album_id: str, request: contracts.PaginationQuery | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.Page[contracts.AlbumItemResponse]]:
+        params = self._payload(contracts.PaginationQuery, request, **kwargs)
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/albums/{album_id}/items", params=params or None,
+            response_model=contracts.Page[contracts.AlbumItemResponse],
+        )
+
+    async def add_item(
+        self, request: contracts.AlbumItemCreateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.AlbumItemResponse]:
+        payload = self._payload(contracts.AlbumItemCreateRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/albums/items", json=payload, response_model=contracts.AlbumItemResponse
+        )
+
+    async def bulk_add_items(self, *, album_id: str, items: list[dict]) -> ApiResult[list[contracts.AlbumItemResponse]]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/albums/items/bulk", json={"album_id": album_id, "items": items},
+            response_model=list[contracts.AlbumItemResponse],
+        )
+
+    async def update_item(
+        self, *, item_id: str, request: contracts.AlbumItemUpdateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.AlbumItemResponse]:
+        payload = self._payload(contracts.AlbumItemUpdateRequest, request, **kwargs)
+        return await self._client._request(
+            "PATCH", f"{API_PREFIX}/albums/items/{item_id}", json=payload, response_model=contracts.AlbumItemResponse
+        )
+
+    async def remove_item(self, *, item_id: str) -> ApiResult[DeletionResult]:
+        payload = self._payload(contracts.AlbumItemRemoveRequest, None, item_id=item_id)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/albums/items/remove", json=payload, response_model=DeletionResult
+        )
+
+    async def link(
+        self, request: contracts.AlbumLinkRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.AlbumLinkResponse]:
+        payload = self._payload(contracts.AlbumLinkRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/albums/link", json=payload, response_model=contracts.AlbumLinkResponse
+        )
+
+    async def unlink(self, *, album_id: str, model_id: str) -> ApiResult[DeletionResult]:
+        payload = self._payload(contracts.AlbumUnlinkRequest, None, album_id=album_id, model_id=model_id)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/albums/unlink", json=payload, response_model=DeletionResult
+        )
+
+    async def share(
+        self, request: contracts.AlbumShareRequest | None = None, **kwargs: Any
+    ) -> ApiResult[ModelShareGrant]:
+        payload = self._payload(contracts.AlbumShareRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/albums/share", json=payload, response_model=ModelShareGrant
+        )
+
+    async def revoke(self, *, grant_id: str) -> ApiResult[RevokedResult]:
+        payload = self._payload(contracts.AlbumRevokeRequest, None, grant_id=grant_id)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/albums/revoke", json=payload, response_model=RevokedResult
+        )
+
+    async def shares(
+        self, *, album_id: str, request: contracts.PaginationQuery | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.Page[ModelShareGrant]]:
+        params = self._payload(contracts.PaginationQuery, request, **kwargs)
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/albums/{album_id}/shares", params=params or None,
+            response_model=contracts.Page[ModelShareGrant],
+        )
+
+
+class VisionApi(_ServiceBase):
+    async def face_swap(
+        self, request: contracts.FaceSwapRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.JobResponse]:
+        payload = self._payload(contracts.FaceSwapRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/vision/face-swap", json=payload, response_model=contracts.JobResponse
+        )
+
+    async def image_crop(
+        self, request: contracts.ImageCropRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.JobResponse]:
+        payload = self._payload(contracts.ImageCropRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/vision/image-crop", json=payload, response_model=contracts.JobResponse
+        )
+
+    async def seedream(
+        self, request: contracts.SeedreamRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.JobResponse]:
+        payload = self._payload(contracts.SeedreamRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/vision/seedream", json=payload, response_model=contracts.JobResponse
+        )
+
+    async def topaz(
+        self, request: contracts.TopazRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.JobResponse]:
+        payload = self._payload(contracts.TopazRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/vision/topaz", json=payload, response_model=contracts.JobResponse
+        )
+
+    async def nano_banana(
+        self, request: contracts.NanoBananaRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.JobResponse]:
+        payload = self._payload(contracts.NanoBananaRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/vision/nano-banana", json=payload, response_model=contracts.JobResponse
+        )
+
+    async def sora(
+        self, request: contracts.SoraRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.JobResponse]:
+        payload = self._payload(contracts.SoraRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/vision/sora", json=payload, response_model=contracts.JobResponse
+        )
+
+    async def kling(
+        self, request: contracts.KlingRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.JobResponse]:
+        payload = self._payload(contracts.KlingRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/vision/kling", json=payload, response_model=contracts.JobResponse
+        )
+
+    async def grok(
+        self, request: contracts.GrokRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.JobResponse]:
+        payload = self._payload(contracts.GrokRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/vision/grok", json=payload, response_model=contracts.JobResponse
+        )
+
+    async def flux(
+        self, request: contracts.FluxRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.JobResponse]:
+        payload = self._payload(contracts.FluxRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/vision/flux", json=payload, response_model=contracts.JobResponse
+        )
+
+
+class TikTokApi(_ServiceBase):
+    async def connect_start(self) -> ApiResult[contracts.TiktokConnectStartResponse]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/tiktok/connect/start", json={},
+            response_model=contracts.TiktokConnectStartResponse,
+        )
+
+    async def connect_callback(
+        self, *, code: str, state: str | None = None,
+        request: contracts.TiktokConnectCallbackPayload | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.TiktokConnectedAccount]:
+        payload = self._payload(contracts.TiktokConnectCallbackPayload, request, code=code, state=state)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/tiktok/connect/callback", json=payload,
+            response_model=contracts.TiktokConnectedAccount,
+        )
+
+    async def refresh_tokens(
+        self, *, connected_account_id: str, refresh_token: str
+    ) -> ApiResult[contracts.TiktokTokenRefreshResponse]:
+        payload = {"connected_account_id": connected_account_id, "refresh_token": refresh_token}
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/tiktok/tokens/refresh", json=payload,
+            response_model=contracts.TiktokTokenRefreshResponse,
+        )
+
+    async def list_accounts(
+        self, *, ownership: str | None = None, status: str | None = None,
+        page: int | None = None, page_size: int | None = None
+    ) -> ApiResult[contracts.Page[contracts.TiktokConnectedAccount]]:
+        params: dict[str, Any] = {}
+        if ownership: params["ownership"] = ownership
+        if status: params["status"] = status
+        if page: params["page"] = page
+        if page_size: params["page_size"] = page_size
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/tiktok/accounts", params=params or None,
+            response_model=contracts.Page[contracts.TiktokConnectedAccount],
+        )
+
+    async def account_detail(self, *, account_id: str) -> ApiResult[contracts.TiktokConnectedAccount]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/tiktok/accounts/{account_id}",
+            response_model=contracts.TiktokConnectedAccount,
+        )
+
+    async def disconnect_account(self, *, account_id: str) -> ApiResult[contracts.TiktokConnectedAccount]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/tiktok/accounts/disconnect", json={"account_id": account_id},
+            response_model=contracts.TiktokConnectedAccount,
+        )
+
+    async def ban_account(self, *, account_id: str) -> ApiResult[contracts.TiktokConnectedAccount]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/tiktok/accounts/ban", json={"account_id": account_id},
+            response_model=contracts.TiktokConnectedAccount,
+        )
+
+    async def assign_org(self, *, account_id: str, org_id: str) -> ApiResult[contracts.TiktokConnectedAccount]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/tiktok/accounts/assign-org",
+            json={"account_id": account_id, "org_id": org_id},
+            response_model=contracts.TiktokConnectedAccount,
+        )
+
+    async def unassign_org(self, *, account_id: str) -> ApiResult[contracts.TiktokConnectedAccount]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/tiktok/accounts/unassign-org", json={"account_id": account_id},
+            response_model=contracts.TiktokConnectedAccount,
+        )
+
+    async def set_label(self, *, account_id: str, label: str | None = None) -> ApiResult[contracts.TiktokConnectedAccount]:
+        payload: dict[str, Any] = {"account_id": account_id}
+        if label is not None: payload["label"] = label
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/tiktok/accounts/label", json=payload,
+            response_model=contracts.TiktokConnectedAccount,
+        )
+
+    async def set_icon(self, *, account_id: str, icon_url: str | None = None) -> ApiResult[contracts.TiktokConnectedAccount]:
+        payload: dict[str, Any] = {"account_id": account_id}
+        if icon_url is not None: payload["icon_url"] = icon_url
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/tiktok/accounts/icon", json=payload,
+            response_model=contracts.TiktokConnectedAccount,
+        )
+
+    async def map_model(
+        self, request: ModelIdentityMapRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.TiktokConnectedAccount]:
+        payload = self._payload(ModelIdentityMapRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/tiktok/accounts/map-model", json=payload,
+            response_model=contracts.TiktokConnectedAccount,
+        )
+
+    async def unmap_model(self, *, account_id: str, model_id: str) -> ApiResult[contracts.TiktokConnectedAccount]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/tiktok/accounts/unmap-model",
+            json={"account_id": account_id, "model_id": model_id},
+            response_model=contracts.TiktokConnectedAccount,
+        )
+
+    async def list_videos(
+        self, *, account_id: str, request: contracts.TiktokVideoListQuery | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.Page[contracts.TiktokVideo]]:
+        params = self._payload(contracts.TiktokVideoListQuery, request, **kwargs)
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/tiktok/accounts/{account_id}/videos", params=params or None,
+            response_model=contracts.Page[contracts.TiktokVideo],
+        )
+
+    async def link_job_to_video(
+        self, *, video_id: str, request: contracts.TiktokVideoJobLinkRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.TiktokVideoJobLink]:
+        payload = self._payload(contracts.TiktokVideoJobLinkRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/tiktok/videos/{video_id}/job-links", json=payload,
+            response_model=contracts.TiktokVideoJobLink,
+        )
+
+    async def analytics(
+        self, request: contracts.TiktokAnalyticsQuery | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.TiktokAnalyticsResponse]:
+        params = self._payload(contracts.TiktokAnalyticsQuery, request, **kwargs)
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/tiktok/analytics", params=params or None,
+            response_model=contracts.TiktokAnalyticsResponse,
+        )
+
+
+class ReferralsApi(_ServiceBase):
+    async def summary(self) -> ApiResult[contracts.ReferralSummaryResult]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/referrals/summary", response_model=contracts.ReferralSummaryResult
+        )
+
+    async def list_codes(self) -> ApiResult[list[contracts.ReferralCodeResponse]]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/referrals/codes", response_model=list[contracts.ReferralCodeResponse]
+        )
+
+    async def create_code(self) -> ApiResult[contracts.ReferralCodeResponse]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/referrals/codes", json={}, response_model=contracts.ReferralCodeResponse
+        )
+
+    async def revoke_code(self, *, code_id: str) -> ApiResult[contracts.ReferralCodeResponse]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/referrals/codes/{code_id}/revoke", json={},
+            response_model=contracts.ReferralCodeResponse,
+        )
+
+
+class HuggingFaceApi(_ServiceBase):
+    async def list_keys(self) -> ApiResult[list[contracts.HfKeyResponse]]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/huggingface/keys", response_model=list[contracts.HfKeyResponse]
+        )
+
+    async def create_key(
+        self, request: contracts.HfKeyCreateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.HfKeyResponse]:
+        payload = self._payload(contracts.HfKeyCreateRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/huggingface/keys", json=payload, response_model=contracts.HfKeyResponse
+        )
+
+    async def update_key(
+        self, *, key_id: str, request: contracts.HfKeyUpdateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.HfKeyResponse]:
+        payload = self._payload(contracts.HfKeyUpdateRequest, request, **kwargs)
+        return await self._client._request(
+            "PATCH", f"{API_PREFIX}/huggingface/keys/{key_id}", json=payload, response_model=contracts.HfKeyResponse
+        )
+
+    async def delete_key(self, *, key_id: str) -> ApiResult[DeletionResult]:
+        return await self._client._request(
+            "DELETE", f"{API_PREFIX}/huggingface/keys/{key_id}", response_model=DeletionResult
+        )
+
+    async def share_key(
+        self, request: contracts.HfKeyShareRequest | None = None, **kwargs: Any
+    ) -> ApiResult[ModelShareGrant]:
+        payload = self._payload(contracts.HfKeyShareRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/huggingface/keys/share", json=payload, response_model=ModelShareGrant
+        )
+
+    async def revoke_key(self, *, grant_id: str) -> ApiResult[RevokedResult]:
+        payload = self._payload(contracts.KeyShareRevokeRequest, None, grant_id=grant_id)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/huggingface/keys/revoke", json=payload, response_model=RevokedResult
+        )
+
+    async def list_shares(self, *, key_id: str) -> ApiResult[list[ModelShareGrant]]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/huggingface/keys/{key_id}/shares", response_model=list[ModelShareGrant]
+        )
+
+    async def probe_repo(self, *, repo_url: str, hf_api_key_id: str | None = None) -> ApiResult[dict]:
+        payload: dict[str, Any] = {"repo_url": repo_url}
+        if hf_api_key_id: payload["hf_api_key_id"] = hf_api_key_id
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/huggingface/repo-info", json=payload, response_model=dict
+        )
+
+
+class CivitaiApi(_ServiceBase):
+    async def list_keys(self) -> ApiResult[list[contracts.CivitaiKeyResponse]]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/civitai/keys", response_model=list[contracts.CivitaiKeyResponse]
+        )
+
+    async def create_key(
+        self, request: contracts.CivitaiKeyCreateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.CivitaiKeyResponse]:
+        payload = self._payload(contracts.CivitaiKeyCreateRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/civitai/keys", json=payload, response_model=contracts.CivitaiKeyResponse
+        )
+
+    async def update_key(
+        self, *, key_id: str, request: contracts.CivitaiKeyUpdateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.CivitaiKeyResponse]:
+        payload = self._payload(contracts.CivitaiKeyUpdateRequest, request, **kwargs)
+        return await self._client._request(
+            "PATCH", f"{API_PREFIX}/civitai/keys/{key_id}", json=payload, response_model=contracts.CivitaiKeyResponse
+        )
+
+    async def delete_key(self, *, key_id: str) -> ApiResult[DeletionResult]:
+        return await self._client._request(
+            "DELETE", f"{API_PREFIX}/civitai/keys/{key_id}", response_model=DeletionResult
+        )
+
+    async def share_key(
+        self, request: contracts.CivitaiKeyShareRequest | None = None, **kwargs: Any
+    ) -> ApiResult[ModelShareGrant]:
+        payload = self._payload(contracts.CivitaiKeyShareRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/civitai/keys/share", json=payload, response_model=ModelShareGrant
+        )
+
+    async def revoke_key(self, *, grant_id: str) -> ApiResult[RevokedResult]:
+        payload = self._payload(contracts.KeyShareRevokeRequest, None, grant_id=grant_id)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/civitai/keys/revoke", json=payload, response_model=RevokedResult
+        )
+
+    async def list_shares(self, *, key_id: str) -> ApiResult[list[ModelShareGrant]]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/civitai/keys/{key_id}/shares", response_model=list[ModelShareGrant]
+        )
+
+
+class ElevenLabsApi(_ServiceBase):
+    async def list_keys(self) -> ApiResult[list[contracts.ElevenLabsKeyResponse]]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/elevenlabs/keys", response_model=list[contracts.ElevenLabsKeyResponse]
+        )
+
+    async def create_key(
+        self, request: contracts.ElevenLabsKeyCreateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.ElevenLabsKeyResponse]:
+        payload = self._payload(contracts.ElevenLabsKeyCreateRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/elevenlabs/keys", json=payload, response_model=contracts.ElevenLabsKeyResponse
+        )
+
+    async def update_key(
+        self, *, key_id: str, request: contracts.ElevenLabsKeyUpdateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.ElevenLabsKeyResponse]:
+        payload = self._payload(contracts.ElevenLabsKeyUpdateRequest, request, **kwargs)
+        return await self._client._request(
+            "PATCH", f"{API_PREFIX}/elevenlabs/keys/{key_id}", json=payload, response_model=contracts.ElevenLabsKeyResponse
+        )
+
+    async def delete_key(self, *, key_id: str) -> ApiResult[DeletionResult]:
+        return await self._client._request(
+            "DELETE", f"{API_PREFIX}/elevenlabs/keys/{key_id}", response_model=DeletionResult
+        )
+
+    async def share_key(
+        self, request: contracts.ElevenLabsKeyShareRequest | None = None, **kwargs: Any
+    ) -> ApiResult[ModelShareGrant]:
+        payload = self._payload(contracts.ElevenLabsKeyShareRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/elevenlabs/keys/share", json=payload, response_model=ModelShareGrant
+        )
+
+    async def revoke_key(self, *, grant_id: str) -> ApiResult[RevokedResult]:
+        payload = self._payload(contracts.KeyShareRevokeRequest, None, grant_id=grant_id)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/elevenlabs/keys/revoke", json=payload, response_model=RevokedResult
+        )
+
+    async def list_shares(self, *, key_id: str) -> ApiResult[list[ModelShareGrant]]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/elevenlabs/keys/{key_id}/shares", response_model=list[ModelShareGrant]
+        )
+
+    async def list_models(self, *, key_id: str) -> ApiResult[list[contracts.ElevenLabsModelResponse]]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/elevenlabs/models", params={"key_id": key_id},
+            response_model=list[contracts.ElevenLabsModelResponse],
+        )
+
+    async def list_voices(
+        self, request: contracts.ElevenLabsVoiceListQuery | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.Page[contracts.ElevenLabsVoiceResponse]]:
+        params = self._payload(contracts.ElevenLabsVoiceListQuery, request, **kwargs)
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/elevenlabs/voices", params=params or None,
+            response_model=contracts.Page[contracts.ElevenLabsVoiceResponse],
+        )
+
+    async def get_voice(self, *, voice_id: str, key_id: str) -> ApiResult[contracts.ElevenLabsVoiceResponse]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/elevenlabs/voices/{voice_id}", params={"key_id": key_id},
+            response_model=contracts.ElevenLabsVoiceResponse,
+        )
+
+    async def voice_model_links(self, *, voice_id: str, key_id: str) -> ApiResult[list[str]]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/elevenlabs/voices/{voice_id}/models", params={"key_id": key_id},
+            response_model=list[str],
+        )
+
+    async def update_voice_model_links(
+        self, *, voice_id: str, request: contracts.ElevenLabsVoiceModelLinksUpdateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[dict]:
+        payload = self._payload(contracts.ElevenLabsVoiceModelLinksUpdateRequest, request, **kwargs)
+        return await self._client._request(
+            "PUT", f"{API_PREFIX}/elevenlabs/voices/{voice_id}/models", json=payload, response_model=dict
+        )
+
+    async def clone_voice(
+        self, request: contracts.ElevenLabsVoiceCloneRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.ElevenLabsVoiceResponse]:
+        payload = self._payload(contracts.ElevenLabsVoiceCloneRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/elevenlabs/voices/clone", json=payload,
+            response_model=contracts.ElevenLabsVoiceResponse,
+        )
+
+    async def design_voice(
+        self, request: contracts.ElevenLabsVoiceDesignRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.ElevenLabsVoiceDesignResponse]:
+        payload = self._payload(contracts.ElevenLabsVoiceDesignRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/elevenlabs/voices/design", json=payload,
+            response_model=contracts.ElevenLabsVoiceDesignResponse,
+        )
+
+    async def update_voice(
+        self, *, voice_id: str, request: contracts.ElevenLabsVoiceUpdateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.ElevenLabsVoiceResponse]:
+        payload = self._payload(contracts.ElevenLabsVoiceUpdateRequest, request, **kwargs)
+        return await self._client._request(
+            "PATCH", f"{API_PREFIX}/elevenlabs/voices/{voice_id}", json=payload,
+            response_model=contracts.ElevenLabsVoiceResponse,
+        )
+
+    async def delete_voice(self, *, voice_id: str, key_id: str) -> ApiResult[DeletionResult]:
+        return await self._client._request(
+            "DELETE", f"{API_PREFIX}/elevenlabs/voices/{voice_id}", params={"key_id": key_id},
+            response_model=DeletionResult,
+        )
+
+    async def voice_settings(self, *, voice_id: str, key_id: str) -> ApiResult[dict]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/elevenlabs/voices/{voice_id}/settings", params={"key_id": key_id},
+            response_model=dict,
+        )
+
+    async def update_voice_settings(
+        self, *, voice_id: str, request: contracts.ElevenLabsVoiceSettingsUpdateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[dict]:
+        payload = self._payload(contracts.ElevenLabsVoiceSettingsUpdateRequest, request, **kwargs)
+        return await self._client._request(
+            "PATCH", f"{API_PREFIX}/elevenlabs/voices/{voice_id}/settings", json=payload, response_model=dict
+        )
+
+    async def text_to_speech(
+        self, request: contracts.ElevenLabsTtsRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.ElevenLabsSpeechResponse]:
+        payload = self._payload(contracts.ElevenLabsTtsRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/elevenlabs/speech", json=payload,
+            response_model=contracts.ElevenLabsSpeechResponse,
+        )
+
+
+class LorasApi(_ServiceBase):
+    async def list(self, *, model_id: str | None = None) -> ApiResult[list[contracts.SavedLoraResponse]]:
+        params: dict[str, Any] = {}
+        if model_id: params["model_id"] = model_id
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/loras", params=params or None, response_model=list[contracts.SavedLoraResponse]
+        )
+
+    async def create(
+        self, request: contracts.SavedLoraCreateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.SavedLoraResponse]:
+        payload = self._payload(contracts.SavedLoraCreateRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/loras", json=payload, response_model=contracts.SavedLoraResponse
+        )
+
+    async def update(
+        self, *, lora_id: str, request: contracts.SavedLoraUpdateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.SavedLoraResponse]:
+        payload = self._payload(contracts.SavedLoraUpdateRequest, request, **kwargs)
+        return await self._client._request(
+            "PATCH", f"{API_PREFIX}/loras/{lora_id}", json=payload, response_model=contracts.SavedLoraResponse
+        )
+
+    async def delete(self, *, lora_id: str) -> ApiResult[DeletionResult]:
+        return await self._client._request(
+            "DELETE", f"{API_PREFIX}/loras/{lora_id}", response_model=DeletionResult
+        )
+
+
+class LegalApi(_ServiceBase):
+    async def terms(self) -> ApiResult[contracts.LegalDocumentResponse]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/legal/terms", response_model=contracts.LegalDocumentResponse
+        )
+
+    async def privacy(self) -> ApiResult[contracts.LegalDocumentResponse]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/legal/privacy", response_model=contracts.LegalDocumentResponse
+        )
+
+
+class AppsApi(_ServiceBase):
+    async def list(
+        self, request: contracts.AppListQuery | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.Page[contracts.AppCatalogItemResponse]]:
+        params = self._payload(contracts.AppListQuery, request, **kwargs)
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/apps", params=params or None,
+            response_model=contracts.Page[contracts.AppCatalogItemResponse],
+        )
+
+    async def access(self, *, app_slug: str) -> ApiResult[contracts.AppAccessResponse]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/apps/{app_slug}/access", response_model=contracts.AppAccessResponse
+        )
+
+    async def latest_version(self, *, app_slug: str) -> ApiResult[contracts.AppLatestVersionResponse]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/apps/{app_slug}/versions/latest",
+            response_model=contracts.AppLatestVersionResponse,
+        )
+
+    async def list_versions(
+        self, *, app_slug: str, request: contracts.AppVersionListQuery | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.Page[contracts.AppVersionPublicResponse]]:
+        params = self._payload(contracts.AppVersionListQuery, request, **kwargs)
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/apps/{app_slug}/versions", params=params or None,
+            response_model=contracts.Page[contracts.AppVersionPublicResponse],
+        )
+
+
+class DiscordWebhooksApi(_ServiceBase):
+    async def list(self, *, org_id: str) -> ApiResult[list[contracts.OrgDiscordWebhookResponse]]:
+        return await self._client._request(
+            "GET", f"{API_PREFIX}/orgs/{org_id}/discord-webhooks",
+            response_model=list[contracts.OrgDiscordWebhookResponse],
+        )
+
+    async def create(
+        self, *, org_id: str, request: contracts.OrgDiscordWebhookCreateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.OrgDiscordWebhookResponse]:
+        payload = self._payload(contracts.OrgDiscordWebhookCreateRequest, request, **kwargs)
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/orgs/{org_id}/discord-webhooks", json=payload,
+            response_model=contracts.OrgDiscordWebhookResponse,
+        )
+
+    async def update(
+        self, *, org_id: str, webhook_id: str,
+        request: contracts.OrgDiscordWebhookUpdateRequest | None = None, **kwargs: Any
+    ) -> ApiResult[contracts.OrgDiscordWebhookResponse]:
+        payload = self._payload(contracts.OrgDiscordWebhookUpdateRequest, request, **kwargs)
+        return await self._client._request(
+            "PATCH", f"{API_PREFIX}/orgs/{org_id}/discord-webhooks/{webhook_id}", json=payload,
+            response_model=contracts.OrgDiscordWebhookResponse,
+        )
+
+    async def delete(self, *, org_id: str, webhook_id: str) -> ApiResult[DeletionResult]:
+        return await self._client._request(
+            "DELETE", f"{API_PREFIX}/orgs/{org_id}/discord-webhooks/{webhook_id}",
+            response_model=DeletionResult,
+        )
+
+    async def test(
+        self, *, org_id: str, webhook_id: str
+    ) -> ApiResult[contracts.OrgDiscordWebhookTestResponse]:
+        return await self._client._request(
+            "POST", f"{API_PREFIX}/orgs/{org_id}/discord-webhooks/{webhook_id}/test", json={},
+            response_model=contracts.OrgDiscordWebhookTestResponse,
         )
 
 
