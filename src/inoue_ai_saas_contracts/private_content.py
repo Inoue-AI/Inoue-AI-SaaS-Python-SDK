@@ -7,6 +7,8 @@ from decimal import Decimal
 
 from pydantic import BaseModel, Field
 
+from .pagination import PaginationQuery
+
 # ── Fixed costs ──────────────────────────────────────────────────────────────
 
 MOTIONMUSE_CREDIT_COST = Decimal("5")
@@ -179,17 +181,13 @@ class PrivateContentProviderUpdate(BaseModel):
 # ── Query models ─────────────────────────────────────────────────────────────
 
 
-class PrivateContentTemplateListQuery(BaseModel):
-    page: int = 1
-    page_size: int = 20
+class PrivateContentTemplateListQuery(PaginationQuery):
     provider_slug: str | None = None
     search: str | None = None
     sensitive: bool | None = None
     order: str | None = None
 
 
-class PrivateContentCollectionListQuery(BaseModel):
-    page: int = 1
-    page_size: int = 20
+class PrivateContentCollectionListQuery(PaginationQuery):
     provider_slug: str | None = None
     status: str | None = None
