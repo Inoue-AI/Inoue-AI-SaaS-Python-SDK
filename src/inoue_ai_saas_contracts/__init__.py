@@ -1,6 +1,14 @@
 """Shared contracts for Inoue AI SaaS."""
 
 from .analytics import RevenueEvent, RevenueSummary
+from .apps import (
+    AppAccessResponse,
+    AppCatalogItemResponse,
+    AppLatestVersionResponse,
+    AppListQuery,
+    AppVersionListQuery,
+    AppVersionPublicResponse,
+)
 from .audit import AuditLog
 from .auth import (
     AccessTokenClaims,
@@ -55,6 +63,10 @@ from .auth import (
     CollectionUpdateRequest,
     DatasetImagePayload,
     DatasetImageUploadRequest,
+    ElevenLabsKeyCreateRequest,
+    ElevenLabsKeyResponse,
+    ElevenLabsKeyShareRequest,
+    ElevenLabsKeyUpdateRequest,
     FanvueConnectCallbackRequest,
     GenerateAvatarRequest,
     GenerateCandidatesRequest,
@@ -133,22 +145,10 @@ from .auth import (
     WebhookEndpointResponse,
     WebhookEventResponse,
     WebhookIngestRequest,
-    ElevenLabsKeyCreateRequest,
-    ElevenLabsKeyResponse,
-    ElevenLabsKeyShareRequest,
-    ElevenLabsKeyUpdateRequest,
     WorkerRegisterRequest,
     WorkerRegisterResponse,
     WorkerTokenRequest,
     WorkerTokenResponse,
-)
-from .apps import (
-    AppAccessResponse,
-    AppCatalogItemResponse,
-    AppLatestVersionResponse,
-    AppListQuery,
-    AppVersionListQuery,
-    AppVersionPublicResponse,
 )
 from .billing import (
     BillingCheckoutCreateRequest,
@@ -171,6 +171,35 @@ from .calendar_feeds import (
     CalendarSubscriptionResponse,
     CalendarSubscriptionUpdateRequest,
 )
+from .caption_templates import (
+    CaptionTemplateListQuery,
+    CaptionTemplateResponse,
+    UserCaptionTemplateCreateRequest,
+    UserCaptionTemplateListQuery,
+    UserCaptionTemplateResponse,
+    UserCaptionTemplateUpdateRequest,
+)
+from .captions import (
+    CaptionProjectCreateRequest,
+    CaptionProjectExportRequest,
+    CaptionProjectListQuery,
+    CaptionProjectResponse,
+    CaptionProjectUpdateRequest,
+    CaptionRenderClaimResponse,
+    CaptionRenderCompleteRequest,
+    CaptionRenderFailRequest,
+    CaptionRenderProgressRequest,
+    CaptionRenderRequestResponse,
+    CaptionRenderStatusHistoryCreateRequest,
+    CaptionRenderStatusHistoryResponse,
+    TranscriptionClaimResponse,
+    TranscriptionCompleteRequest,
+    TranscriptionFailRequest,
+    TranscriptionProgressRequest,
+    TranscriptionRequestResponse,
+    TranscriptionStatusHistoryCreateRequest,
+    TranscriptionStatusHistoryResponse,
+)
 from .characters import (
     CharacterCreationEnqueueResponse,
     CharacterCreationListQuery,
@@ -182,23 +211,6 @@ from .characters import (
 )
 from .constants import *  # noqa: F403
 from .credits import RateCardEntry, UsageRecord, UserWallet
-from .elevenlabs import (
-    ElevenLabsModelResponse,
-    ElevenLabsModelsQuery,
-    ElevenLabsSpeechResponse,
-    ElevenLabsTtsRequest,
-    ElevenLabsVoiceCloneRequest,
-    ElevenLabsVoiceDesignRequest,
-    ElevenLabsVoiceDesignResponse,
-    ElevenLabsVoiceFileInput,
-    ElevenLabsVoiceGetQuery,
-    ElevenLabsVoiceListQuery,
-    ElevenLabsVoiceModelLinksQuery,
-    ElevenLabsVoiceModelLinksUpdateRequest,
-    ElevenLabsVoiceResponse,
-    ElevenLabsVoiceSettingsUpdateRequest,
-    ElevenLabsVoiceUpdateRequest,
-)
 from .discord_webhooks import (
     DISCORD_WEBHOOK_EVENT_TYPES,
     OrgDiscordWebhookCreateRequest,
@@ -228,6 +240,23 @@ from .downloads import (
     ContentDownloadRetryRequest,
     ContentDownloadStatusHistoryCreateRequest,
     ContentDownloadStatusHistoryResponse,
+)
+from .elevenlabs import (
+    ElevenLabsModelResponse,
+    ElevenLabsModelsQuery,
+    ElevenLabsSpeechResponse,
+    ElevenLabsTtsRequest,
+    ElevenLabsVoiceCloneRequest,
+    ElevenLabsVoiceDesignRequest,
+    ElevenLabsVoiceDesignResponse,
+    ElevenLabsVoiceFileInput,
+    ElevenLabsVoiceGetQuery,
+    ElevenLabsVoiceListQuery,
+    ElevenLabsVoiceModelLinksQuery,
+    ElevenLabsVoiceModelLinksUpdateRequest,
+    ElevenLabsVoiceResponse,
+    ElevenLabsVoiceSettingsUpdateRequest,
+    ElevenLabsVoiceUpdateRequest,
 )
 from .enums import (
     AccessLevel,
@@ -269,7 +298,6 @@ from .fanvue import (
     ModelIdentityMapRequest,
     ModelPlatformIdentity,
 )
-from .legal import LegalDocumentResponse, LegalDocumentSection
 from .jobs import (
     BaseJobPayload,
     FanvueUploadJobPayload,
@@ -277,6 +305,7 @@ from .jobs import (
     JobCompletionResult,
     SdxlImageJobPayload,
 )
+from .legal import LegalDocumentResponse, LegalDocumentSection
 from .notifications import InternalNotification, NotificationItem, NotificationRead
 from .pagination import (
     AlbumListQuery,
@@ -301,13 +330,29 @@ from .pagination import (
     WebhookEventListQuery,
 )
 from .pooling import ModelPool, ModelPoolMember, PoolingInvite, PoolView
+from .posts import PostMedia, PostTargetRecord
+from .private_content import (
+    MOTIONMUSE_CREDIT_COST,
+    PrivateContentCollectionListQuery,
+    PrivateContentCollectionResponse,
+    PrivateContentCollectionUpsert,
+    PrivateContentGenerateRequest,
+    PrivateContentProviderInsert,
+    PrivateContentProviderResponse,
+    PrivateContentProviderUpdate,
+    PrivateContentTemplateListQuery,
+    PrivateContentTemplateResponse,
+    PrivateContentTemplateUpsert,
+    PrivateContentUserAccessInsert,
+    PrivateContentUserAccessResponse,
+    PrivateContentUserAccessUpdate,
+)
 from .push_subscriptions import (
     PushSubscriptionCreateRequest,
     PushSubscriptionKeys,
     PushSubscriptionResponse,
     VapidPublicKeyResponse,
 )
-from .posts import PostMedia, PostTargetRecord
 from .referrals import (
     ReferralCodeCreateRequest,
     ReferralCodeResponse,
@@ -352,22 +397,6 @@ from .schedule import (
     ScheduleEntryUpdateRequest,
     SchedulePlatform,
 )
-from .tiktok import (
-    TiktokAccountListQuery,
-    TiktokAnalyticsPoint,
-    TiktokAnalyticsQuery,
-    TiktokAnalyticsResponse,
-    TiktokAnalyticsSummary,
-    TiktokConnectedAccount,
-    TiktokConnectCallbackPayload,
-    TiktokConnectStartResponse,
-    TiktokTokenRefreshRequest,
-    TiktokTokenRefreshResponse,
-    TiktokVideo,
-    TiktokVideoJobLink,
-    TiktokVideoJobLinkRequest,
-    TiktokVideoListQuery,
-)
 from .system import (
     FluxOptions,
     HealthStatus,
@@ -382,6 +411,28 @@ from .system import (
     WanOptions,
     ZImageOptions,
 )
+from .tiktok import (
+    TiktokAccountListQuery,
+    TiktokAnalyticsPoint,
+    TiktokAnalyticsQuery,
+    TiktokAnalyticsResponse,
+    TiktokAnalyticsSummary,
+    TiktokConnectCallbackPayload,
+    TiktokConnectedAccount,
+    TiktokConnectStartResponse,
+    TiktokTokenRefreshRequest,
+    TiktokTokenRefreshResponse,
+    TiktokVideo,
+    TiktokVideoJobLink,
+    TiktokVideoJobLinkRequest,
+    TiktokVideoListQuery,
+)
+from .training import (
+    LoraTrainingField,
+    LoraTrainingFieldOption,
+    LoraTrainingOptions,
+    LoraTrainingScript,
+)
 from .vision import (
     CropAssetItem,
     FaceSwapRequest,
@@ -393,12 +444,6 @@ from .vision import (
     SeedreamRequest,
     SoraRequest,
     TopazRequest,
-)
-from .training import (
-    LoraTrainingField,
-    LoraTrainingFieldOption,
-    LoraTrainingOptions,
-    LoraTrainingScript,
 )
 from .webhooks import WebhookEndpointCreateResult, WebhookIngestResult
 from .workers import (
@@ -796,4 +841,18 @@ __all__ = [
     "KlingRequest",
     "GrokRequest",
     "FluxRequest",
+    "MOTIONMUSE_CREDIT_COST",
+    "PrivateContentCollectionListQuery",
+    "PrivateContentCollectionResponse",
+    "PrivateContentCollectionUpsert",
+    "PrivateContentGenerateRequest",
+    "PrivateContentProviderInsert",
+    "PrivateContentProviderResponse",
+    "PrivateContentProviderUpdate",
+    "PrivateContentTemplateListQuery",
+    "PrivateContentTemplateResponse",
+    "PrivateContentTemplateUpsert",
+    "PrivateContentUserAccessInsert",
+    "PrivateContentUserAccessResponse",
+    "PrivateContentUserAccessUpdate",
 ]

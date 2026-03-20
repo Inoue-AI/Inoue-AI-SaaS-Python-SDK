@@ -99,6 +99,7 @@ class AuthMeOrg(BaseModel):
 class AuthMeResult(BaseModel):
     user: User
     orgs: list[AuthMeOrg]
+    private_content_access: bool = False
 
 
 class UserSessionResponse(BaseModel):

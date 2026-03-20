@@ -106,6 +106,7 @@ class JobType(str, Enum):
     WAN_I2V = "wan_i2v"
     ZIMAGE_TXT2IMG = "zimage_txt2img"
     ZIMAGE_TURBO_TXT2IMG = "zimage_turbo_txt2img"
+    MOTIONMUSE_GENERATE = "motionmuse_generate"
 
 
 class ModelCreationMode(str, Enum):
@@ -213,6 +214,7 @@ class EngineType(str, Enum):
     QWEN = "qwen"
     WAN = "wan"
     ZIMAGE = "zimage"
+    MOTIONMUSE = "motionmuse"
 
 
 class EngineCategory(str, Enum):

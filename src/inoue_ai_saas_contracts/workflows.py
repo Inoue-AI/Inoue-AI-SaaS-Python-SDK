@@ -123,6 +123,7 @@ class WorkflowBatchRunResponse(BaseModel):
 
 class ApprovalGateApproveRequest(BaseModel):
     """Body for POST /v1/workflow-runs/run-steps/:id/approve."""
+
     pass
 
 
