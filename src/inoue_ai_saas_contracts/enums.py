@@ -109,6 +109,84 @@ class JobType(str, Enum):
     MOTIONMUSE_GENERATE = "motionmuse_generate"
 
 
+JOB_TYPE_TITLES: dict[str, str] = {
+    JobType.SDXL_IMAGE.value: "SDXL · Image",
+    JobType.UPSCALE.value: "SDXL · Upscale",
+    JobType.HYPERLORA_SDXL_TRAIN.value: "HyperLoRA · SDXL Train",
+    JobType.LORA_SDXL_DB_TRAIN.value: "LoRA · SDXL Dreambooth Train",
+    JobType.LORA_QWEN_IMAGE_TRAIN.value: "LoRA · Qwen Image Train",
+    JobType.FACE_SWAP.value: "Face Swap",
+    JobType.IMAGE_CROP.value: "Image Crop",
+    JobType.IDENTITY_SWAP.value: "Identity Swap",
+    JobType.FANVUE_UPLOAD.value: "Fanvue · Upload",
+    JobType.FANVUE_SEND_MESSAGE.value: "Fanvue · Send Message",
+    JobType.FANVUE_POST.value: "Fanvue · Post",
+    JobType.THREADS_POST.value: "Threads · Post",
+    JobType.SEEDREAM_V4_T2I.value: "Seedream V4 · Text to Image",
+    JobType.SEEDREAM_V4_EDIT.value: "Seedream V4 · Edit",
+    JobType.SEEDREAM_V4_5_T2I.value: "Seedream V4.5 · Text to Image",
+    JobType.SEEDREAM_V4_5_EDIT.value: "Seedream V4.5 · Edit",
+    JobType.SEEDREAM_5_LITE_T2I.value: "Seedream 5.0 Lite · Text to Image",
+    JobType.SEEDREAM_5_LITE_I2I.value: "Seedream 5.0 Lite · Image to Image",
+    JobType.NANOBANANA_T2I.value: "Nano Banana · Text to Image",
+    JobType.NANOBANANA_I2I.value: "Nano Banana · Image to Image",
+    JobType.NANOBANANA_PRO_T2I_1K2K.value: "Nano Banana Pro · Text to Image (1K/2K)",
+    JobType.NANOBANANA_PRO_T2I_4K.value: "Nano Banana Pro · Text to Image (4K)",
+    JobType.NANOBANANA_PRO_I2I_1K2K.value: "Nano Banana Pro · Image to Image (1K/2K)",
+    JobType.NANOBANANA_PRO_I2I_4K.value: "Nano Banana Pro · Image to Image (4K)",
+    JobType.NANOBANANA2_T2I_1K.value: "Nano Banana 2 · Text to Image (1K)",
+    JobType.NANOBANANA2_T2I_2K.value: "Nano Banana 2 · Text to Image (2K)",
+    JobType.NANOBANANA2_T2I_4K.value: "Nano Banana 2 · Text to Image (4K)",
+    JobType.NANOBANANA2_I2I_1K.value: "Nano Banana 2 · Image to Image (1K)",
+    JobType.NANOBANANA2_I2I_2K.value: "Nano Banana 2 · Image to Image (2K)",
+    JobType.NANOBANANA2_I2I_4K.value: "Nano Banana 2 · Image to Image (4K)",
+    JobType.SORA2_T2V.value: "Sora 2 · Text to Video",
+    JobType.SORA2_I2V.value: "Sora 2 · Image to Video",
+    JobType.SORA2PRO_T2V.value: "Sora 2 Pro · Text to Video",
+    JobType.SORA2PRO_I2V.value: "Sora 2 Pro · Image to Video",
+    JobType.KLING_O1_T2V.value: "Kling O1 · Text to Video",
+    JobType.KLING_O1_I2V.value: "Kling O1 · Image to Video",
+    JobType.KLING_2_6_T2V.value: "Kling 2.6 · Text to Video",
+    JobType.KLING_2_6_I2V.value: "Kling 2.6 · Image to Video",
+    JobType.KLING_2_6_MOTION_V2V.value: "Kling 2.6 Motion V2V",
+    JobType.KLING_2_5_TURBO_T2V.value: "Kling 2.5 Turbo · Text to Video",
+    JobType.KLING_2_5_TURBO_I2V.value: "Kling 2.5 Turbo · Image to Video",
+    JobType.KLING_2_1_MASTER_T2V.value: "Kling 2.1 Master · Text to Video",
+    JobType.KLING_2_1_MASTER_I2V.value: "Kling 2.1 Master · Image to Video",
+    JobType.KLING_2_1_T2V.value: "Kling 2.1 · Text to Video",
+    JobType.KLING_2_1_I2V.value: "Kling 2.1 · Image to Video",
+    JobType.KLING_2_0_T2V.value: "Kling 2.0 · Text to Video",
+    JobType.KLING_2_0_I2V.value: "Kling 2.0 · Image to Video",
+    JobType.KLING_3_0_VIDEO.value: "Kling 3.0 Video",
+    JobType.GROK_IMAGINE_TEXT_TO_VIDEO.value: "Grok · Text to Video",
+    JobType.GROK_IMAGINE_IMAGE_TO_VIDEO.value: "Grok · Image to Video",
+    JobType.GROK_IMAGINE_IMAGE_TO_IMAGE.value: "Grok · Image to Image",
+    JobType.GROK_IMAGINE_TEXT_TO_IMAGE.value: "Grok · Text to Image",
+    JobType.TOPAZ_IMAGE_UPSCALE.value: "Topaz · Image Upscale",
+    JobType.TOPAZ_VIDEO_UPSCALE.value: "Topaz · Video Upscale",
+    JobType.FLUX2_PRO_T2I.value: "Flux 2 Pro · Text to Image",
+    JobType.FLUX2_PRO_I2I.value: "Flux 2 Pro · Image to Image",
+    JobType.FLUX2_FLEX_T2I.value: "Flux 2 Flex · Text to Image",
+    JobType.FLUX2_FLEX_I2I.value: "Flux 2 Flex · Image to Image",
+    JobType.QWEN_TXT2IMG.value: "Qwen · Text to Image",
+    JobType.QWEN_EDIT.value: "Qwen · Edit",
+    JobType.WAN_T2V.value: "Wan · Text to Video",
+    JobType.WAN_ANIMATE.value: "Wan · Animate",
+    JobType.WAN_TI2V.value: "Wan · Text+Image to Video",
+    JobType.WAN_I2V.value: "Wan · Image to Video",
+    JobType.ZIMAGE_TXT2IMG.value: "Z-Image · Text to Image",
+    JobType.ZIMAGE_TURBO_TXT2IMG.value: "Z-Image Turbo · Text to Image",
+    JobType.MOTIONMUSE_GENERATE.value: "MotionMuse · Generate",
+}
+
+
+def job_type_title(job_type: str) -> str:
+    """Resolve a human-friendly title for a job type from the canonical map."""
+    if job_type in JOB_TYPE_TITLES:
+        return JOB_TYPE_TITLES[job_type]
+    return " ".join(word.capitalize() for word in job_type.replace("_", " ").split())
+
+
 class ModelCreationMode(str, Enum):
     PHOTO_LORA = "photo_lora"
     BASE_TRAITS = "base_traits"

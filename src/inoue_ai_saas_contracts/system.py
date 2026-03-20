@@ -122,3 +122,4 @@ class SystemEnumsResponse(BaseModel):
     wan_options: WanOptions | None = None
     zimage_options: ZImageOptions | None = None
     flux_options: FluxOptions | None = None
+    job_type_titles: dict[str, str] | None = None
