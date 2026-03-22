@@ -232,6 +232,7 @@ TABLE_PRIVATE_CONTENT_PROVIDERS = "private_content_providers"
 TABLE_PRIVATE_CONTENT_USER_ACCESS = "private_content_user_access"
 TABLE_PRIVATE_CONTENT_TEMPLATES = "private_content_templates"
 TABLE_PRIVATE_CONTENT_COLLECTIONS = "private_content_collections"
+TABLE_PRIVATE_CONTENT_TEMPLATE_FAVOURITES = "private_content_template_favourites"
 
 # S3 prefixes
 S3_PREFIX_PRIVATE_CONTENT = "private-content"
