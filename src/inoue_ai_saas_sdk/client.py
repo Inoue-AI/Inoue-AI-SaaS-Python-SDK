@@ -29,9 +29,6 @@ from .models import (
     DeclinedResult,
     DeletionResult,
     DeniedResult,
-    FanvueConnectedAccount,
-    FanvueConnectStart,
-    FanvueTokenRefresh,
     HealthStatus,
     JobCompletionResult,
     ModelIdentityMapRequest,
@@ -127,7 +124,6 @@ class InoueAiSaasClient:
         self.schedule = ScheduleApi(self)
         self.calendar_feeds = CalendarFeedsApi(self)
         self.webhooks = WebhooksApi(self)
-        self.fanvue = FanvueApi(self)
         self.threads = ThreadsApi(self)
         self.collections = CollectionsApi(self)
         self.pooling = PoolingApi(self)
@@ -144,7 +140,6 @@ class InoueAiSaasClient:
         self.huggingface = HuggingFaceApi(self)
         self.civitai = CivitaiApi(self)
         self.elevenlabs = ElevenLabsApi(self)
-        self.loras = LorasApi(self)
         self.legal = LegalApi(self)
         self.apps = AppsApi(self)
         self.discord_webhooks = DiscordWebhooksApi(self)
@@ -578,21 +573,6 @@ class ModelsApi(_ServiceBase):
             f"{API_PREFIX}/models/{model_id}/dataset/images",
             json=payload.model_dump(exclude_none=True),
             response_model=list[contracts.ModelDatasetImageResponse],
-        )
-
-    async def train_lora_job(
-        self,
-        *,
-        model_id: str,
-        request: contracts.TrainLoraJobRequest | None = None,
-        **kwargs: Any,
-    ) -> ApiResult[contracts.ModelJobResponse]:
-        payload = self._payload(contracts.TrainLoraJobRequest, request, **kwargs)
-        return await self._client._request(
-            "POST",
-            f"{API_PREFIX}/models/{model_id}/jobs/train-lora",
-            json=payload,
-            response_model=contracts.ModelJobResponse,
         )
 
     async def generate_candidates_job(
@@ -1980,311 +1960,6 @@ class InternalApi(_ServiceBase):
         )
 
 
-class FanvueApi(_ServiceBase):
-    async def connect_start(self) -> ApiResult[FanvueConnectStart]:
-        return await self._client._request(
-            "POST", f"{API_PREFIX}/fanvue/connect/start", response_model=FanvueConnectStart
-        )
-
-    async def connect_callback(
-        self,
-        *,
-        code: str | None = None,
-        state: str | None = None,
-        request: contracts.FanvueConnectCallbackRequest | None = None,
-        **kwargs: Any,
-    ) -> ApiResult[FanvueConnectedAccount]:
-        payload: dict[str, Any]
-        if request is not None:
-            payload = self._payload(contracts.FanvueConnectCallbackRequest, request, **kwargs)
-        else:
-            if code is None:
-                raise SdkTransportError("code is required for connect_callback")
-            payload = {"code": code}
-        if state:
-            payload["state"] = state
-        return await self._client._request(
-            "POST", f"{API_PREFIX}/fanvue/connect/callback", json=payload, response_model=FanvueConnectedAccount
-        )
-
-    async def refresh_tokens(self, *, connected_account_id: str, refresh_token: str) -> ApiResult[FanvueTokenRefresh]:
-        body = {"connected_account_id": connected_account_id, "refresh_token": refresh_token}
-        return await self._client._request(
-            "POST",
-            f"{API_PREFIX}/fanvue/tokens/refresh",
-            json=body,
-            response_model=FanvueTokenRefresh,
-        )
-
-    async def create_webhook(
-        self, request: contracts.WebhookEndpointCreateRequest | None = None, **kwargs: Any
-    ) -> ApiResult[WebhookEndpointCreateResult]:
-        payload = self._payload(contracts.WebhookEndpointCreateRequest, request, **kwargs)
-        return await self._client._request(
-            "POST", f"{API_PREFIX}/fanvue/webhooks", json=payload, response_model=WebhookEndpointCreateResult
-        )
-
-    async def events(self) -> ApiResult[list[contracts.WebhookEventResponse]]:
-        return await self._client._request(
-            "GET", f"{API_PREFIX}/fanvue/webhooks/events", response_model=list[contracts.WebhookEventResponse]
-        )
-
-    async def list_accounts(
-        self,
-        *,
-        ownership: str | None = None,
-        status: str | None = None,
-        page: int | None = None,
-        page_size: int | None = None,
-    ) -> ApiResult[contracts.Page[contracts.ConnectedAccount]]:
-        params: dict[str, Any] = {}
-        if ownership:
-            params["ownership"] = ownership
-        if status:
-            params["status"] = status
-        if page is not None:
-            params["page"] = page
-        if page_size is not None:
-            params["page_size"] = page_size
-        return await self._client._request(
-            "GET",
-            f"{API_PREFIX}/fanvue/accounts",
-            params=params or None,
-            response_model=contracts.Page[contracts.ConnectedAccount],
-        )
-
-    async def account_detail(self, *, account_id: str) -> ApiResult[contracts.ConnectedAccount]:
-        return await self._client._request(
-            "GET", f"{API_PREFIX}/fanvue/accounts/{account_id}", response_model=contracts.ConnectedAccount
-        )
-
-    async def disconnect_account(self, *, account_id: str) -> ApiResult[FanvueConnectedAccount]:
-        return await self._client._request(
-            "POST",
-            f"{API_PREFIX}/fanvue/accounts/disconnect",
-            json={"account_id": account_id},
-            response_model=FanvueConnectedAccount,
-        )
-
-    async def ban_account(self, *, account_id: str) -> ApiResult[FanvueConnectedAccount]:
-        return await self._client._request(
-            "POST",
-            f"{API_PREFIX}/fanvue/accounts/ban",
-            json={"account_id": account_id},
-            response_model=FanvueConnectedAccount,
-        )
-
-    async def assign_org(self, *, account_id: str, org_id: str) -> ApiResult[FanvueConnectedAccount]:
-        payload = {"account_id": account_id, "org_id": org_id}
-        return await self._client._request(
-            "POST",
-            f"{API_PREFIX}/fanvue/accounts/assign-org",
-            json=payload,
-            response_model=FanvueConnectedAccount,
-        )
-
-    async def unassign_org(self, *, account_id: str) -> ApiResult[FanvueConnectedAccount]:
-        payload = {"account_id": account_id}
-        return await self._client._request(
-            "POST",
-            f"{API_PREFIX}/fanvue/accounts/unassign-org",
-            json=payload,
-            response_model=FanvueConnectedAccount,
-        )
-
-    async def set_label(self, *, account_id: str, label: str | None = None) -> ApiResult[FanvueConnectedAccount]:
-        payload = {"account_id": account_id, "label": label}
-        return await self._client._request(
-            "POST",
-            f"{API_PREFIX}/fanvue/accounts/label",
-            json=payload,
-            response_model=FanvueConnectedAccount,
-        )
-
-    async def map_model_identity(
-        self, request: ModelIdentityMapRequest | None = None, **kwargs: Any
-    ) -> ApiResult[FanvueConnectedAccount]:
-        payload = self._payload(ModelIdentityMapRequest, request, **kwargs)
-        return await self._client._request(
-            "POST", f"{API_PREFIX}/fanvue/accounts/map-model", json=payload, response_model=FanvueConnectedAccount
-        )
-
-    async def list_creators(self, *, account_id: str) -> ApiResult[list[contracts.FanvueCreator]]:
-        return await self._client._request(
-            "GET", f"{API_PREFIX}/fanvue/accounts/{account_id}/creators", response_model=list[contracts.FanvueCreator]
-        )
-
-    async def list_conversations(
-        self,
-        *,
-        model_id: str | None = None,
-        status: str | None = None,
-        page: int | None = None,
-        page_size: int | None = None,
-        q: str | None = None,
-    ) -> ApiResult[contracts.Page[contracts.FanvueConversation]]:
-        params: dict[str, Any] = {}
-        if model_id:
-            params["model_id"] = model_id
-        if status:
-            params["status"] = status
-        if page is not None:
-            params["page"] = page
-        if page_size is not None:
-            params["page_size"] = page_size
-        if q:
-            params["q"] = q
-        return await self._client._request(
-            "GET",
-            f"{API_PREFIX}/fanvue/conversations",
-            params=params or None,
-            response_model=contracts.Page[contracts.FanvueConversation],
-        )
-
-    async def list_messages(
-        self, *, conversation_id: str, page: int | None = None, page_size: int | None = None
-    ) -> ApiResult[contracts.Page[contracts.FanvueMessage]]:
-        params: dict[str, Any] = {}
-        if page is not None:
-            params["page"] = page
-        if page_size is not None:
-            params["page_size"] = page_size
-        return await self._client._request(
-            "GET",
-            f"{API_PREFIX}/fanvue/conversations/{conversation_id}/messages",
-            params=params or None,
-            response_model=contracts.Page[contracts.FanvueMessage],
-        )
-
-    async def create_conversation(
-        self, *, model_id: str, fan_user_id: str, body_text: str, connected_account_id: str | None = None
-    ) -> ApiResult[contracts.FanvueConversation]:
-        payload = {
-            "model_id": model_id,
-            "fan_user_id": fan_user_id,
-            "body_text": body_text,
-            "connected_account_id": connected_account_id,
-        }
-        return await self._client._request(
-            "POST",
-            f"{API_PREFIX}/fanvue/conversations/create",
-            json=payload,
-            response_model=contracts.FanvueConversation,
-        )
-
-    async def lock(self, *, conversation_id: str) -> ApiResult[contracts.ConversationLock]:
-        return await self._client._request(
-            "POST",
-            f"{API_PREFIX}/fanvue/conversations/{conversation_id}/lock",
-            response_model=contracts.ConversationLock,
-        )
-
-    async def unlock(self, *, conversation_id: str) -> ApiResult[UnlockedResult]:
-        return await self._client._request(
-            "POST",
-            f"{API_PREFIX}/fanvue/conversations/{conversation_id}/unlock",
-            response_model=UnlockedResult,
-        )
-
-    async def request_access(self, *, conversation_id: str) -> ApiResult[contracts.ConversationLockRequest]:
-        return await self._client._request(
-            "POST",
-            f"{API_PREFIX}/fanvue/conversations/{conversation_id}/request-access",
-            response_model=contracts.ConversationLockRequest,
-        )
-
-    async def approve_request(self, *, conversation_id: str, request_id: str) -> ApiResult[ApprovedResult]:
-        return await self._client._request(
-            "POST",
-            f"{API_PREFIX}/fanvue/conversations/{conversation_id}/requests/{request_id}/approve",
-            response_model=ApprovedResult,
-        )
-
-    async def deny_request(self, *, conversation_id: str, request_id: str) -> ApiResult[DeniedResult]:
-        return await self._client._request(
-            "POST",
-            f"{API_PREFIX}/fanvue/conversations/{conversation_id}/requests/{request_id}/deny",
-            response_model=DeniedResult,
-        )
-
-    async def takeover(self, *, conversation_id: str) -> ApiResult[contracts.ConversationLock]:
-        return await self._client._request(
-            "POST",
-            f"{API_PREFIX}/fanvue/conversations/{conversation_id}/takeover",
-            response_model=contracts.ConversationLock,
-        )
-
-    async def send_message(
-        self,
-        *,
-        conversation_id: str,
-        body_text: str,
-        attachments: list[dict] | None = None,
-        sent_at: str | None = None,
-    ) -> ApiResult[contracts.FanvueMessage]:
-        payload: dict[str, Any] = {"conversation_id": conversation_id, "body_text": body_text}
-        if attachments is not None:
-            payload["attachments"] = attachments
-        if sent_at is not None:
-            payload["sent_at"] = sent_at
-        return await self._client._request(
-            "POST",
-            f"{API_PREFIX}/fanvue/messages/send",
-            json=payload,
-            response_model=contracts.FanvueMessage,
-        )
-
-    async def mass_send(
-        self, *, model_id: str, body_text: str, attachments: list[dict] | None = None, **kwargs: Any
-    ) -> ApiResult[dict]:
-        payload: dict[str, Any] = {"model_id": model_id, "body_text": body_text}
-        if attachments:
-            payload["attachments"] = attachments
-        payload.update({k: v for k, v in kwargs.items() if v is not None})
-        return await self._client._request(
-            "POST", f"{API_PREFIX}/fanvue/messages/mass-send", json=payload, response_model=dict
-        )
-
-    async def delete_message(self, *, conversation_id: str, message_id: str) -> ApiResult[DeletionResult]:
-        return await self._client._request(
-            "DELETE", f"{API_PREFIX}/fanvue/conversations/{conversation_id}/messages/{message_id}",
-            response_model=DeletionResult,
-        )
-
-    async def heartbeat_conversation(self, *, conversation_id: str) -> ApiResult[dict]:
-        return await self._client._request(
-            "POST", f"{API_PREFIX}/fanvue/conversations/{conversation_id}/heartbeat", json={},
-            response_model=dict,
-        )
-
-    async def list_media(self, *, conversation_id: str) -> ApiResult[list[dict]]:
-        return await self._client._request(
-            "GET", f"{API_PREFIX}/fanvue/conversations/{conversation_id}/media",
-            response_model=list[dict],
-        )
-
-    async def fan_insights(self, *, conversation_id: str) -> ApiResult[dict]:
-        return await self._client._request(
-            "GET", f"{API_PREFIX}/fanvue/conversations/{conversation_id}/fan-insights",
-            response_model=dict,
-        )
-
-    async def set_icon(self, *, account_id: str, icon_url: str | None = None) -> ApiResult[FanvueConnectedAccount]:
-        payload: dict[str, Any] = {"account_id": account_id}
-        if icon_url is not None:
-            payload["icon_url"] = icon_url
-        return await self._client._request(
-            "POST", f"{API_PREFIX}/fanvue/accounts/icon", json=payload,
-            response_model=FanvueConnectedAccount,
-        )
-
-    async def unmap_model(self, *, account_id: str, model_id: str) -> ApiResult[FanvueConnectedAccount]:
-        return await self._client._request(
-            "POST", f"{API_PREFIX}/fanvue/accounts/unmap-model",
-            json={"account_id": account_id, "model_id": model_id},
-            response_model=FanvueConnectedAccount,
-        )
-
 
 class ThreadsApi(_ServiceBase):
     async def connect_callback(self, *, code: str, state: str | None = None) -> ApiResult[contracts.ConnectedAccount]:
@@ -2379,34 +2054,6 @@ class ThreadsApi(_ServiceBase):
 
 
 class WebhooksApi(_ServiceBase):
-    async def ingest_mock(
-        self,
-        request: contracts.WebhookIngestRequest | None = None,
-        *,
-        endpoint_id: str,
-        payload: dict[str, Any] | None = None,
-        event_type: str = "unknown",
-        headers: Mapping[str, str] | None = None,
-    ) -> ApiResult[WebhookIngestResult]:
-        body = self._payload(
-            contracts.WebhookIngestRequest,
-            request,
-            endpoint_id=endpoint_id,
-            payload=payload or {},
-            event_type=event_type,
-        )
-        prepared_headers = _normalize_headers(headers)
-        prepared_headers.setdefault("X-Webhook-Endpoint", endpoint_id)
-        prepared_headers.setdefault("X-Fanvue-Event", event_type)
-        return await self._client._request(
-            "POST",
-            "/fanvue",
-            json=body,
-            headers=prepared_headers,
-            response_model=WebhookIngestResult,
-            use_webhooks=True,
-        )
-
     async def health(self, headers: Mapping[str, str] | None = None) -> ApiResult[HealthStatus]:
         return await self._client._request(
             "GET", "/health", headers=headers, response_model=HealthStatus, use_webhooks=True
@@ -3154,35 +2801,6 @@ class ElevenLabsApi(_ServiceBase):
             response_model=contracts.ElevenLabsSpeechResponse,
         )
 
-
-class LorasApi(_ServiceBase):
-    async def list(self, *, model_id: str | None = None) -> ApiResult[list[contracts.SavedLoraResponse]]:
-        params: dict[str, Any] = {}
-        if model_id: params["model_id"] = model_id
-        return await self._client._request(
-            "GET", f"{API_PREFIX}/loras", params=params or None, response_model=list[contracts.SavedLoraResponse]
-        )
-
-    async def create(
-        self, request: contracts.SavedLoraCreateRequest | None = None, **kwargs: Any
-    ) -> ApiResult[contracts.SavedLoraResponse]:
-        payload = self._payload(contracts.SavedLoraCreateRequest, request, **kwargs)
-        return await self._client._request(
-            "POST", f"{API_PREFIX}/loras", json=payload, response_model=contracts.SavedLoraResponse
-        )
-
-    async def update(
-        self, *, lora_id: str, request: contracts.SavedLoraUpdateRequest | None = None, **kwargs: Any
-    ) -> ApiResult[contracts.SavedLoraResponse]:
-        payload = self._payload(contracts.SavedLoraUpdateRequest, request, **kwargs)
-        return await self._client._request(
-            "PATCH", f"{API_PREFIX}/loras/{lora_id}", json=payload, response_model=contracts.SavedLoraResponse
-        )
-
-    async def delete(self, *, lora_id: str) -> ApiResult[DeletionResult]:
-        return await self._client._request(
-            "DELETE", f"{API_PREFIX}/loras/{lora_id}", response_model=DeletionResult
-        )
 
 
 class LegalApi(_ServiceBase):
