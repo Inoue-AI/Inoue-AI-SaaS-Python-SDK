@@ -14,9 +14,9 @@ HEADER_WORKER_BOOTSTRAP = "X-Worker-Bootstrap"
 from inoue_ai_saas_contracts.enums import EngineType, JobType  # noqa: E402
 
 ALLOWED_PROMPT_RUN_JOB_TYPES = [
-    # Legacy / RunPod serverless
-    JobType.SDXL_IMAGE.value,
-    JobType.UPSCALE.value,
+    # Face Swap / Image Crop
+    JobType.FACE_SWAP.value,
+    JobType.IMAGE_CROP.value,
     # Nano Banana
     JobType.NANOBANANA_T2I.value,
     JobType.NANOBANANA_I2I.value,
@@ -24,6 +24,12 @@ ALLOWED_PROMPT_RUN_JOB_TYPES = [
     JobType.NANOBANANA_PRO_T2I_4K.value,
     JobType.NANOBANANA_PRO_I2I_1K2K.value,
     JobType.NANOBANANA_PRO_I2I_4K.value,
+    JobType.NANOBANANA2_T2I_1K.value,
+    JobType.NANOBANANA2_T2I_2K.value,
+    JobType.NANOBANANA2_T2I_4K.value,
+    JobType.NANOBANANA2_I2I_1K.value,
+    JobType.NANOBANANA2_I2I_2K.value,
+    JobType.NANOBANANA2_I2I_4K.value,
     # Seedream
     JobType.SEEDREAM_V4_T2I.value,
     JobType.SEEDREAM_V4_EDIT.value,
@@ -64,21 +70,11 @@ ALLOWED_PROMPT_RUN_JOB_TYPES = [
     JobType.FLUX2_PRO_I2I.value,
     JobType.FLUX2_FLEX_T2I.value,
     JobType.FLUX2_FLEX_I2I.value,
-    # Qwen / Wan / Z-Image (RunPod serverless)
-    JobType.QWEN_TXT2IMG.value,
-    JobType.QWEN_EDIT.value,
-    JobType.IDENTITY_SWAP.value,
-    JobType.WAN_T2V.value,
-    JobType.WAN_ANIMATE.value,
-    JobType.WAN_TI2V.value,
-    JobType.WAN_I2V.value,
-    JobType.ZIMAGE_TXT2IMG.value,
-    JobType.ZIMAGE_TURBO_TXT2IMG.value,
+    # MotionMuse
+    JobType.MOTIONMUSE_GENERATE.value,
 ]
 
 ALLOWED_PROMPT_RUN_ENGINE_TYPES = [
-    EngineType.SDXL.value,
-    EngineType.UPSCALE.value,
     EngineType.KLING.value,
     EngineType.SORA.value,
     EngineType.NANOBANANA.value,
@@ -86,9 +82,7 @@ ALLOWED_PROMPT_RUN_ENGINE_TYPES = [
     EngineType.GROK.value,
     EngineType.TOPAZ.value,
     EngineType.FLUX.value,
-    EngineType.QWEN.value,
-    EngineType.WAN.value,
-    EngineType.ZIMAGE.value,
+    EngineType.MOTIONMUSE.value,
 ]
 
 # RPC function names
@@ -135,6 +129,7 @@ TABLE_JOB_HISTORY = "job_status_history"
 TABLE_ASSETS = "assets"
 TABLE_ASSET_LINKS = "asset_model_links"
 TABLE_ASSET_OUTPUTS = "asset_job_outputs"
+TABLE_MODEL_IDENTITY_ASSETS = "model_identity_assets"
 TABLE_COLLECTIONS = "collections"
 TABLE_COLLECTION_ITEMS = "collection_items"
 TABLE_COLLECTION_ITEM_SECRETS = "collection_item_secrets"
@@ -176,7 +171,7 @@ TABLE_CIVITAI_API_KEY_SECRETS = "civitai_api_key_secrets"
 TABLE_ELEVENLABS_API_KEYS = "elevenlabs_api_keys"
 TABLE_ELEVENLABS_API_KEY_SECRETS = "elevenlabs_api_key_secrets"
 TABLE_ELEVENLABS_MODEL_VOICES = "elevenlabs_model_voices"
-TABLE_SAVED_LORAS = "saved_loras"
+TABLE_SAVED_LORAS = "saved_loras"  # kept for PostgREST reads of historical data
 TABLE_INTERNAL_NOTIFICATIONS = "internal_notifications"
 TABLE_INTERNAL_NOTIFICATION_READS = "internal_notification_reads"
 TABLE_AUDIT_LOGS = "audit_logs"
@@ -232,12 +227,12 @@ TABLE_PRIVATE_CONTENT_PROVIDERS = "private_content_providers"
 TABLE_PRIVATE_CONTENT_USER_ACCESS = "private_content_user_access"
 TABLE_PRIVATE_CONTENT_TEMPLATES = "private_content_templates"
 TABLE_PRIVATE_CONTENT_COLLECTIONS = "private_content_collections"
+TABLE_PRIVATE_CONTENT_TEMPLATE_FAVOURITES = "private_content_template_favourites"
 
 # S3 prefixes
 S3_PREFIX_PRIVATE_CONTENT = "private-content"
 
 # Platform names
-PLATFORM_FANVUE = "fanvue"
 PLATFORM_TIKTOK = "tiktok"
 
 # Queue names
