@@ -3,8 +3,6 @@ from .exceptions import SdkError, SdkTransportError
 from .models import (
     ApiResult,
     AssetPublicResponse,
-    FanvueConnectStart,
-    FanvueTokenRefresh,
     JobCompletionResult,
     OrgOverviewResponse,
     WebhookIngestResult,
@@ -19,6 +17,4 @@ __all__ = [
     "WebhookIngestResult",
     "AssetPublicResponse",
     "OrgOverviewResponse",
-    "FanvueConnectStart",
-    "FanvueTokenRefresh",
 ]
