@@ -259,6 +259,7 @@ from .elevenlabs import (
     ElevenLabsVoiceUpdateRequest,
 )
 from .enums import (
+    JOB_TYPE_TITLES,
     AccessLevel,
     AssetType,
     EngineCategory,
@@ -283,6 +284,7 @@ from .enums import (
     WorkflowRunStatus,
     WorkflowStatus,
     WorkflowStepStatus,
+    job_type_title,
 )
 from .errors import ERROR_CATALOG, ApiException, ErrorDetail
 from .fanvue import (
