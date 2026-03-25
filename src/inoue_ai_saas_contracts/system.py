@@ -5,8 +5,6 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
-from .training import LoraTrainingOptions
-
 
 class HealthStatus(BaseModel):
     model_config = ConfigDict(extra="allow")
@@ -56,37 +54,10 @@ class TopazOptions(BaseModel):
     video_upscale_factors: list[str] = ["1", "2", "4"]
 
 
-class QwenOptions(BaseModel):
-    job_types: list[str]
-    model_names: list[str]
-    tasks: list[str]
-    inference_keys_by_job_type: dict[str, list[str]]
-    max_reference_assets_by_job_type: dict[str, int] | None = None
-    examples: list[dict[str, Any]] | None = None
-
-
-class WanOptions(BaseModel):
-    job_types: list[str]
-    model_names: list[str]
-    tasks: list[str]
-    inference_keys_by_job_type: dict[str, list[str]]
-    max_reference_assets_by_job_type: dict[str, int] | None = None
-    defaults_by_job_type: dict[str, dict[str, Any]] | None = None
-    resolution_presets_by_job_type: dict[str, list[dict[str, Any]]] | None = None
-
-
 class FluxOptions(BaseModel):
     aspect_ratios: list[str] = []
     resolutions: list[str] = []
     max_reference_images: int = 8
-
-
-class ZImageOptions(BaseModel):
-    job_types: list[str]
-    model_names: list[str]
-    tasks: list[str]
-    inference_keys_by_job_type: dict[str, list[str]]
-    max_reference_assets_by_job_type: dict[str, int] | None = None
 
 
 class SystemEnumsResponse(BaseModel):
@@ -109,17 +80,9 @@ class SystemEnumsResponse(BaseModel):
     membership_statuses: list[str] | None = None
     platforms: list[str]
     asset_types: list[str]
-    lora_training: LoraTrainingOptions | None = None
-    pipeline_base_models: list[str] | None = None
-    pipeline_vae_models: list[str] | None = None
-    pipeline_schedulers: list[str] | None = None
-    pipeline_model_variants: list[str] | None = None
-    pipeline_token_limits: dict[str, dict[str, int]] | None = None
     nanobanana_options: NanoBananaOptions | None = None
     seedream_options: SeedreamOptions | None = None
     topaz_options: TopazOptions | None = None
-    qwen_options: QwenOptions | None = None
-    wan_options: WanOptions | None = None
-    zimage_options: ZImageOptions | None = None
     flux_options: FluxOptions | None = None
+    identity_asset_roles: list[str] | None = None
     job_type_titles: dict[str, str] | None = None

@@ -117,18 +117,32 @@ class JobType(str, Enum):
     WAN_2_6_V2V = "wan_2_6_v2v"
 
 
+DEPRECATED_JOB_TYPES: frozenset[str] = frozenset(
+    {
+        "sdxl_image",
+        "upscale",
+        "hyperlora_sdxl_train",
+        "lora_sdxl_dreambooth_train",
+        "lora_qwen_image_train",
+        "fanvue_upload",
+        "fanvue_send_message",
+        "fanvue_post",
+        "identity_swap",
+        "qwen_txt2img",
+        "qwen_edit",
+        "wan_t2v",
+        "wan_animate",
+        "wan_ti2v",
+        "wan_i2v",
+        "zimage_txt2img",
+        "zimage_turbo_txt2img",
+    }
+)
+
+
 JOB_TYPE_TITLES: dict[str, str] = {
-    JobType.SDXL_IMAGE.value: "SDXL · Image",
-    JobType.UPSCALE.value: "SDXL · Upscale",
-    JobType.HYPERLORA_SDXL_TRAIN.value: "HyperLoRA · SDXL Train",
-    JobType.LORA_SDXL_DB_TRAIN.value: "LoRA · SDXL Dreambooth Train",
-    JobType.LORA_QWEN_IMAGE_TRAIN.value: "LoRA · Qwen Image Train",
     JobType.FACE_SWAP.value: "Face Swap",
     JobType.IMAGE_CROP.value: "Image Crop",
-    JobType.IDENTITY_SWAP.value: "Identity Swap",
-    JobType.FANVUE_UPLOAD.value: "Fanvue · Upload",
-    JobType.FANVUE_SEND_MESSAGE.value: "Fanvue · Send Message",
-    JobType.FANVUE_POST.value: "Fanvue · Post",
     JobType.THREADS_POST.value: "Threads · Post",
     JobType.SEEDREAM_V4_T2I.value: "Seedream V4 · Text to Image",
     JobType.SEEDREAM_V4_EDIT.value: "Seedream V4 · Edit",
@@ -176,14 +190,6 @@ JOB_TYPE_TITLES: dict[str, str] = {
     JobType.FLUX2_PRO_I2I.value: "Flux 2 Pro · Image to Image",
     JobType.FLUX2_FLEX_T2I.value: "Flux 2 Flex · Text to Image",
     JobType.FLUX2_FLEX_I2I.value: "Flux 2 Flex · Image to Image",
-    JobType.QWEN_TXT2IMG.value: "Qwen · Text to Image",
-    JobType.QWEN_EDIT.value: "Qwen · Edit",
-    JobType.WAN_T2V.value: "Wan · Text to Video",
-    JobType.WAN_ANIMATE.value: "Wan · Animate",
-    JobType.WAN_TI2V.value: "Wan · Text+Image to Video",
-    JobType.WAN_I2V.value: "Wan · Image to Video",
-    JobType.ZIMAGE_TXT2IMG.value: "Z-Image · Text to Image",
-    JobType.ZIMAGE_TURBO_TXT2IMG.value: "Z-Image Turbo · Text to Image",
     JobType.MOTIONMUSE_GENERATE.value: "MotionMuse · Generate",
     JobType.KLING_3_0_MOTION_V2V.value: "Kling 3.0 · Motion Control",
     JobType.KLING_AVATAR_STANDARD.value: "Kling · AI Avatar Standard",
@@ -208,6 +214,15 @@ class ModelCreationMode(str, Enum):
     BASE_TRAITS = "base_traits"
     UPLOADED_LORA = "uploaded_lora"
     HUGGINGFACE_LORA = "huggingface_lora"
+
+
+DEPRECATED_MODEL_CREATION_MODES: frozenset[str] = frozenset(
+    {
+        ModelCreationMode.PHOTO_LORA.value,
+        ModelCreationMode.UPLOADED_LORA.value,
+        ModelCreationMode.HUGGINGFACE_LORA.value,
+    }
+)
 
 
 class ModelWorkflowStatus(str, Enum):
@@ -311,6 +326,17 @@ class EngineType(str, Enum):
     MOTIONMUSE = "motionmuse"
 
 
+DEPRECATED_ENGINE_TYPES: frozenset[str] = frozenset(
+    {
+        EngineType.SDXL.value,
+        EngineType.UPSCALE.value,
+        EngineType.LORA.value,
+        EngineType.QWEN.value,
+        EngineType.ZIMAGE.value,
+    }
+)
+
+
 class EngineCategory(str, Enum):
     IMAGE = "image"
     VIDEO = "video"
@@ -339,3 +365,10 @@ class WorkflowStepStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
+
+
+class IdentityAssetRole(str, Enum):
+    FACE = "face"
+    BODY = "body"
+    STYLE = "style"
+    GENERAL = "general"
