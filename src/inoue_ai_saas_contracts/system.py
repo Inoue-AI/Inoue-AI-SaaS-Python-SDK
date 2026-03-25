@@ -86,3 +86,4 @@ class SystemEnumsResponse(BaseModel):
     flux_options: FluxOptions | None = None
     identity_asset_roles: list[str] | None = None
     job_type_titles: dict[str, str] | None = None
+    vision_generation_schemas: list[dict[str, Any]] | None = None
