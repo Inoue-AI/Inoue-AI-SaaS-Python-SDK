@@ -107,6 +107,14 @@ class JobType(str, Enum):
     ZIMAGE_TXT2IMG = "zimage_txt2img"
     ZIMAGE_TURBO_TXT2IMG = "zimage_turbo_txt2img"
     MOTIONMUSE_GENERATE = "motionmuse_generate"
+    KLING_3_0_MOTION_V2V = "kling_3_0_motion_v2v"
+    KLING_AVATAR_STANDARD = "kling_avatar_standard"
+    KLING_AVATAR_PRO = "kling_avatar_pro"
+    SORA2_WATERMARK_REMOVE = "sora2_watermark_remove"
+    SORA2_PRO_STORYBOARD = "sora2_pro_storyboard"
+    WAN_2_6_T2V = "wan_2_6_t2v"
+    WAN_2_6_I2V = "wan_2_6_i2v"
+    WAN_2_6_V2V = "wan_2_6_v2v"
 
 
 JOB_TYPE_TITLES: dict[str, str] = {
@@ -177,6 +185,14 @@ JOB_TYPE_TITLES: dict[str, str] = {
     JobType.ZIMAGE_TXT2IMG.value: "Z-Image · Text to Image",
     JobType.ZIMAGE_TURBO_TXT2IMG.value: "Z-Image Turbo · Text to Image",
     JobType.MOTIONMUSE_GENERATE.value: "MotionMuse · Generate",
+    JobType.KLING_3_0_MOTION_V2V.value: "Kling 3.0 · Motion Control",
+    JobType.KLING_AVATAR_STANDARD.value: "Kling · AI Avatar Standard",
+    JobType.KLING_AVATAR_PRO.value: "Kling · AI Avatar Pro",
+    JobType.SORA2_WATERMARK_REMOVE.value: "Sora 2 · Watermark Remover",
+    JobType.SORA2_PRO_STORYBOARD.value: "Sora 2 Pro · Storyboard",
+    JobType.WAN_2_6_T2V.value: "Wan 2.6 · Text to Video",
+    JobType.WAN_2_6_I2V.value: "Wan 2.6 · Image to Video",
+    JobType.WAN_2_6_V2V.value: "Wan 2.6 · Video to Video",
 }
 
 
