@@ -37,3 +37,20 @@ class NotificationItem(BaseModel):
     created_at: datetime | None = None
     is_muted: bool = False
     read_at: datetime | None = None
+
+
+class NotificationCounts(BaseModel):
+    """Server-side aggregated notification counts (independent of pagination)."""
+
+    total: int = 0
+    unread: int = 0
+    muted: int = 0
+
+
+class NotificationModelMute(BaseModel):
+    """A record of a user muting all notifications from a specific model."""
+
+    id: str
+    user_id: str
+    model_id: str
+    created_at: datetime | None = None

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -75,6 +75,12 @@ class WorkerTokenClaims(BaseModel):
     exp: int
 
 
+class UserPreferences(BaseModel):
+    """User-level settings stored as JSONB on the users table."""
+
+    default_model_id: str | None = None
+
+
 class User(BaseModel):
     id: str
     email: EmailStr
@@ -82,6 +88,7 @@ class User(BaseModel):
     is_2fa_enabled: bool = False
     is_admin: bool = False
     roles: list[str] | None = None
+    preferences: dict[str, Any] | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
     last_login_at: datetime | None = None

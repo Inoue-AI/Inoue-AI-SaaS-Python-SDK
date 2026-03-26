@@ -10,10 +10,10 @@ from inoue_ai_saas_sdk import InoueAiSaasClient
 ALL_API_NAMES = [
     "auth", "orgs", "models", "prompts", "jobs", "downloads", "credits",
     "billing", "admin_downloads", "internal", "assets", "posts", "schedule",
-    "calendar_feeds", "webhooks", "fanvue", "threads", "collections",
+    "calendar_feeds", "webhooks", "threads", "collections",
     "pooling", "notifications", "analytics", "audit", "system", "workflows",
     "push_subscriptions", "albums", "vision", "tiktok", "referrals",
-    "huggingface", "civitai", "elevenlabs", "loras", "legal", "apps",
+    "huggingface", "civitai", "elevenlabs", "legal", "apps",
     "discord_webhooks",
 ]
 
@@ -25,7 +25,7 @@ def test_client_has_all_api_accessors(client: InoueAiSaasClient) -> None:
 
 
 def test_client_api_count(client: InoueAiSaasClient) -> None:
-    assert len(ALL_API_NAMES) == 36
+    assert len(ALL_API_NAMES) == 34
 
 
 # --- Existing API classes: verify new methods exist ---
@@ -45,7 +45,6 @@ NEW_SCHEDULE_METHODS = [
     "list_recurring_rules", "create_recurring_rule", "update_recurring_rule",
     "delete_recurring_rule", "toggle_rule",
 ]
-NEW_FANVUE_METHODS = ["mass_send", "delete_message", "heartbeat_conversation", "list_media", "fan_insights", "set_icon", "unmap_model"]
 NEW_THREADS_METHODS = ["set_icon"]
 
 
@@ -59,7 +58,6 @@ NEW_THREADS_METHODS = ["set_icon"]
     *[("downloads", m) for m in NEW_DOWNLOADS_METHODS],
     *[("credits", m) for m in NEW_CREDITS_METHODS],
     *[("schedule", m) for m in NEW_SCHEDULE_METHODS],
-    *[("fanvue", m) for m in NEW_FANVUE_METHODS],
     *[("threads", m) for m in NEW_THREADS_METHODS],
 ])
 def test_existing_api_has_new_method(client: InoueAiSaasClient, api_name: str, method_name: str) -> None:
@@ -81,7 +79,6 @@ NEW_API_METHOD_MAP = {
         "list_keys", "create_key", "list_models", "list_voices", "get_voice",
         "clone_voice", "design_voice", "update_voice", "delete_voice", "text_to_speech",
     ],
-    "loras": ["list", "create", "update", "delete"],
     "legal": ["terms", "privacy"],
     "apps": ["list", "access", "latest_version", "list_versions"],
     "discord_webhooks": ["list", "create", "update", "delete", "test"],
